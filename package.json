@@ -1,0 +1,15 @@
+{
+  "name": "detox-puppeteer",
+  "version": "0.0.1",
+  "main": "index.js",
+  "private": true,
+  "scripts": {},
+  "dependencies": {
+    "@babel/core": "^7.8.4",
+    "@babel/runtime": "^7.8.4",
+    "detox": "^15.1.4",
+    "prettier": "^1.19.0",
+    "puppeteer": "^2.1.0"
+  },
+  "devDependencies": {}
+}
