@@ -1,1 +1,1 @@
-module.exports = require('./PuppeteerDriver');
+module.exports = require('./build/PuppeteerDriver');
