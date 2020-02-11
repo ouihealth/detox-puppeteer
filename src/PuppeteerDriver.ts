@@ -1,41 +1,46 @@
-const _ = require('lodash');
+import * as _ from 'lodash';
 const path = require('path');
 const fs = require('fs');
 const log = require('../../utils/logger').child({ __filename });
-const DeviceDriverBase = require('./DeviceDriverBase');
-const InvocationManager = require('../../invoke').InvocationManager;
-const invoke = require('../../invoke');
+const DeviceDriverBase = require('detox/src/devices/drivers/DeviceDriverBase');
+const InvocationManager = require('detox/src/invoke').InvocationManager;
 
-const temporaryPath = require('../../artifacts/utils/temporaryPath');
-const SimulatorLogPlugin = require('../../artifacts/log/ios/SimulatorLogPlugin');
-const PuppeteerScreenshotPlugin = require('../../artifacts/screenshot/PuppeteerScreenshotPlugin');
-const PuppeteerRecordVideoPlugin = require('../../artifacts/video/PuppeteerRecordVideoPlugin');
-const SimulatorInstrumentsPlugin = require('../../artifacts/instruments/ios/SimulatorInstrumentsPlugin');
-const WebExpect = require('../../web/expect');
+const temporaryPath = require('detox/src/artifacts/utils/temporaryPath');
+const PuppeteerScreenshotPlugin = require('@src/PuppeteerScreenshotPlugin');
+const PuppeteerRecordVideoPlugin = require('@src/PuppeteerRecordVideoPlugin');
+import WebExpect from '@src/expect';
 
-const puppeteer = require('puppeteer');
-const Client = require('../../client/Client');
-const { LoginTestee } = require('../../client/actions/actions');
+// const puppeteer = require('puppeteer');
+import puppeteer from 'puppeteer';
+const Client = require('detox/src/client/Client');
+const { LoginTestee } = require('detox/src/client/actions/actions');
 
-function sleep(ms) {
+// @ts-ignore
+function sleep(ms: number) {
   return new Promise((res) => {
     setTimeout(res, ms);
   });
 }
 
-function debug(label, ...args) {
+function debug(label: string, ...args: any[]) {
   return;
   log.info(`PuppeteerDriver.${label}`, ...args);
 }
-function debugTestee(label, ...args) {
+function debugTestee(label: string, ...args: any[]) {
   return;
   log.info(`PuppeteerTestee.${label}`, ...args);
 }
 
 let enableSynchronization = true;
-let browser, page;
-let urlBlacklist = [];
+let browser: puppeteer.Browser | null;
+let page: puppeteer.Page | null;
+let urlBlacklist: string[] = [];
 class PuppeteerTestee {
+  configuration: any;
+  client: typeof Client;
+  inflightRequests: { [key: string]: boolean };
+  inflightRequestsSettledCallback: (() => void) | null;
+
   constructor(config) {
     debugTestee('PuppeteerTestee.constructor', config);
     this.configuration = config.client.configuration;
@@ -46,21 +51,25 @@ class PuppeteerTestee {
     this.removeInflightRequest = this.removeInflightRequest.bind(this);
   }
 
-  async selectElementWithMatcher(...args) {
+  async selectElementWithMatcher(...args: any[]) {
     debugTestee('selectElementWithMatcher', JSON.stringify(args, null, 2));
     const selectorArg = args.find((a) => a.method === 'selector');
-    const timeoutArg = args.find((a) => a.method === 'option' && typeof a.args[0].timeout === 'number');
-    const visibleArg = args.find((a) => a.method === 'option' && typeof a.args[0].visible === 'boolean');
+    const timeoutArg = args.find(
+      (a) => a.method === 'option' && typeof a.args[0].timeout === 'number',
+    );
+    const visibleArg = args.find(
+      (a) => a.method === 'option' && typeof a.args[0].visible === 'boolean',
+    );
     const indexArg = args.find((a) => a.method === 'index');
-    let result = null;
+    let result: puppeteer.JSHandle<unknown> | null = null;
     try {
       // This is a dummy waitFor because sometimes the JS thread is (apparently)
       // blocked and doesn't execute our element finding function a single time
       // before being able to run again.
-      await page.waitFor(() => {
+      await page!.waitFor(() => {
         return true;
       });
-      result = await page.waitFor(
+      result = await page!.waitFor(
         ({ selectorArg, indexArg, visibleArg }) => {
           const xpath = selectorArg.args[0];
           const isContainMatcher = xpath.includes('contains(');
@@ -68,6 +77,7 @@ class PuppeteerTestee {
           // let candidates = Array.prototype.slice.apply(document.querySelectorAll(selectorArg ? selectorArg.args.join('') : 'body'), [0]);
           const iterator = document.evaluate(`//*${xpath}`, document.body);
           const elements = [];
+          // @ts-ignore
           let maybeElement, lastMatch;
           while ((maybeElement = iterator.iterateNext())) {
             lastMatch = maybeElement;
@@ -75,6 +85,7 @@ class PuppeteerTestee {
             // element we actually care about so only take the element if it
             // is a leaf
             if (!isContainMatcher || maybeElement.children.length === 0) {
+              // @ts-ignore
               elements.push(maybeElement);
             }
           }
@@ -88,10 +99,10 @@ class PuppeteerTestee {
           return element;
         },
         { timeout: timeoutArg ? timeoutArg.args[0].timeout : 200 },
-        { visibleArg, selectorArg, indexArg }
+        { visibleArg, selectorArg, indexArg },
       );
       if (visibleArg && visibleArg.args[0].visible === false) {
-        const isVisible = await result.isIntersectingViewport();
+        const isVisible = await (result as puppeteer.ElementHandle).isIntersectingViewport();
         if (isVisible) throw new Error(`Element should not be visible: ${selectorArg.args[0]}`);
       }
     } catch (e) {
@@ -105,25 +116,25 @@ class PuppeteerTestee {
     return result;
   }
 
-  async performAction(element, action) {
+  async performAction(element: any, action: any) {
     debugTestee('performAction', action);
     if (action.method === 'replaceText') {
       await element.click();
-      await page.keyboard.type(action.args[0]);
+      await page!.keyboard.type(action.args[0]);
       return true;
     } else if (action.method === 'typeText') {
       await element.click();
-      await page.keyboard.type(action.args[0]);
+      await page!.keyboard.type(action.args[0]);
       return true;
     } else if (action.method === 'keyboardPress') {
       await element.click();
-      await page.keyboard.press(action.args[0]);
+      await page!.keyboard.press(action.args[0]);
       return true;
     } else if (action.method === 'clearText') {
       const elementValue = await element.evaluate((el) => el.value);
       await element.click();
       for (let i = 0; i < elementValue.length; i++) {
-        await page.keyboard.press('Backspace');
+        await page!.keyboard.press('Backspace');
       }
       return true;
     } else if (action.method === 'tap') {
@@ -133,7 +144,7 @@ class PuppeteerTestee {
       const box = await element.boundingBox();
       const x = box.x + action.args[0].x;
       const y = box.y + action.args[0].y;
-      await page.touchscreen.tap(x, y);
+      await page!.touchscreen.tap(x, y);
       return true;
     } else if (action.method === 'longPress') {
       await element.evaluate(
@@ -145,22 +156,22 @@ class PuppeteerTestee {
             const touch = new Touch({
               identifier: Date.now(),
               target: document,
-              pageX: 600,
-              pageY: 85
+              pageX,
+              pageY,
             });
             const start = new TouchEvent('touchstart', {
               cancelable: true,
               bubbles: true,
               touches: [touch],
               targetTouches: [],
-              changedTouches: [touch]
+              changedTouches: [touch],
             });
             const end = new TouchEvent('touchend', {
               cancelable: true,
               bubbles: true,
               touches: [touch],
               targetTouches: [],
-              changedTouches: [touch]
+              changedTouches: [touch],
             });
 
             el.dispatchEvent(start);
@@ -171,7 +182,7 @@ class PuppeteerTestee {
             }, duration);
           });
         },
-        { duration: action.args[0] }
+        { duration: action.args[0] },
       );
       return true;
     } else if (action.method === 'multiTap') {
@@ -200,7 +211,7 @@ class PuppeteerTestee {
         (el, scrollOptions) => {
           el.scrollBy(scrollOptions);
         },
-        { top, left }
+        { top, left },
       );
       return true;
     } else if (action.method === 'scrollTo') {
@@ -222,15 +233,14 @@ class PuppeteerTestee {
         (el, scrollOptions) => {
           el.scrollBy(scrollOptions);
         },
-        { top, left }
+        { top, left },
       );
       return true;
     } else if (action.method === 'swipe') {
       const direction = action.args[0];
-      const speed = action.args[1];
-      const percentage = action.args[2];
-
       // TODO handle all options
+      // const speed = action.args[1];
+      // const percentage = action.args[2];
       let top = 0;
       let left = 0;
       if (direction === 'up') {
@@ -247,7 +257,7 @@ class PuppeteerTestee {
         (el, scrollOptions) => {
           el.scrollBy(scrollOptions);
         },
-        { top, left }
+        { top, left },
       );
       return true;
     }
@@ -266,7 +276,13 @@ class PuppeteerTestee {
     const isNotVisibleMatcher = matcher.method === 'option' && matcher.args[0].visible === false;
     const isExistsMatcher = matcher.method === 'option' && matcher.args[0].exists === true;
     const isNotExistsMatcher = matcher.method === 'option' && matcher.args[0].exists === false;
-    debugTestee('assertWithMatcher', { isExists, isVisibleMatcher, isNotVisibleMatcher, isExistsMatcher, isNotExistsMatcher });
+    debugTestee('assertWithMatcher', {
+      isExists,
+      isVisibleMatcher,
+      isNotVisibleMatcher,
+      isExistsMatcher,
+      isNotExistsMatcher,
+    });
 
     let result = true;
     if (isVisibleMatcher || isNotVisibleMatcher) {
@@ -310,7 +326,7 @@ class PuppeteerTestee {
       return arg;
     });
 
-    const args = await Promise.all(promises)
+    const args = await Promise.all(promises);
     if (params.target === 'this' || params.target.type === 'this') {
       const result = await this[params.method](...args);
       debugTestee('result?', params.method, !!result);
@@ -321,19 +337,19 @@ class PuppeteerTestee {
   }
 
   async setupNetworkSynchronization() {
-    page.on('request', this.onRequest);
-    page.on('requestfinished', this.removeInflightRequest);
-    page.on('requestfailed', this.removeInflightRequest);
+    page!.on('request', this.onRequest);
+    page!.on('requestfinished', this.removeInflightRequest);
+    page!.on('requestfailed', this.removeInflightRequest);
   }
 
   async teardownNetworkSynchronization() {
-    page.removeListener('request', this.onRequest);
-    page.removeListener('requestfinished', this.removeInflightRequest);
-    page.removeListener('requestfailed', this.removeInflightRequest);
+    page!.removeListener('request', this.onRequest);
+    page!.removeListener('requestfinished', this.removeInflightRequest);
+    page!.removeListener('requestfailed', this.removeInflightRequest);
   }
 
   async synchronizeNetwork() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       if (Object.keys(this.inflightRequests).length === 0) {
         resolve();
         return;
@@ -366,7 +382,7 @@ class PuppeteerTestee {
     if (!isIgnored) {
       this.inflightRequests[request.uid] = true;
     }
-  };
+  }
 
   async connect() {
     // this.client.ws.on('error', (e) => {
@@ -377,11 +393,11 @@ class PuppeteerTestee {
     //   console.log('close');
     // });
 
-    const client = await page.target().createCDPSession();
+    const client = await page!.target().createCDPSession();
     await client.send('Animation.enable');
 
     /* animation synchronization */
-    let animationTimeById = {};
+    let animationTimeById: { [key: string]: number } = {};
     client.on('Animation.animationStarted', ({ animation }) => {
       // console.log('Animation started id=', animation.id)
       // console.log(animation)
@@ -396,39 +412,42 @@ class PuppeteerTestee {
     await this.client.ws.open();
     this.client.ws.ws.on('message', async (str) => {
       // https://github.com/wix/Detox/blob/ca620e760747ade9cb673c28262200b02e8e8a5d/docs/Troubleshooting.Synchronization.md#settimeout-and-setinterval
-      async function setupDetoxTimeouts() {
-        await page.evaluate(() => {
-          if (!window._detoxOriginalSetTimeout) window._detoxOriginalSetTimeout = window.setTimeout;
-          if (!window._detoxOriginalClearTimeout) window._detoxOriginalClearTimeout = window.clearTimeout;
-          if (!window._detoxTimeouts) window._detoxTimeouts = {};
-          window.setTimeout = (callback, ms) => {
-            const stack = new Error().stack;
-            const isPuppeteerTimeout = stack.includes("waitForPredicatePageFunction");
-            if (isPuppeteerTimeout) {
-              window._detoxOriginalSetTimeout(callback, ms);
-              return;
-            }
+      // async function setupDetoxTimeouts() {
+      //   await page.evaluate(() => {
+      //     if (!window._detoxOriginalSetTimeout)
+      //       window._detoxOriginalSetTimeout = window.setTimeout;
+      //     if (!window._detoxOriginalClearTimeout)
+      //       window._detoxOriginalClearTimeout = window.clearTimeout;
+      //     if (!window._detoxTimeouts) window._detoxTimeouts = {};
+      //     window.setTimeout = (callback, ms) => {
+      //       const stack = new Error().stack;
+      //       const isPuppeteerTimeout = stack.includes(
+      //         "waitForPredicatePageFunction"
+      //       );
+      //       if (isPuppeteerTimeout) {
+      //         window._detoxOriginalSetTimeout(callback, ms);
+      //         return;
+      //       }
 
-            const timeout = window._detoxOriginalSetTimeout(() => {
-              delete window._detoxTimeouts[timeout];
-              callback();
-            }, ms);
-            window._detoxTimeouts[timeout] = true;
-          };
-          window.clearTimeout = (timeout) => {
-            delete window._detoxTimeouts[timeout];
-            window._detoxOriginalClearTimeout(timeout);
-          };
-        });
-      }
+      //       const timeout = window._detoxOriginalSetTimeout(() => {
+      //         delete window._detoxTimeouts[timeout];
+      //         callback();
+      //       }, ms);
+      //       window._detoxTimeouts[timeout] = true;
+      //     };
+      //     window.clearTimeout = timeout => {
+      //       delete window._detoxTimeouts[timeout];
+      //       window._detoxOriginalClearTimeout(timeout);
+      //     };
+      //   });
+      // }
 
       try {
         // TODO figure out why we need a try catch here. Sometimes it errors as "Target closed"
         // Also firebase uses a setTimeout on repeat which doesn't seem compatible with timeout logic
         // https://github.com/firebase/firebase-js-sdk/blob/6b53e0058483c9002d2fe56119f86fc9fb96b56c/packages/auth/src/storage/indexeddb.js#L644
         // setupDetoxTimeouts();
-      }
-      catch (e) {
+      } catch (e) {
         // console.warn(e);
       }
 
@@ -437,39 +456,44 @@ class PuppeteerTestee {
       await this.teardownNetworkSynchronization();
       await this.setupNetworkSynchronization();
 
-      const sendResponse = async (response, options = {}) => {
+      const sendResponse = async (response, options: { skipSynchronization?: boolean } = {}) => {
         debugTestee('sendResponse', response);
         const performSynchronization = enableSynchronization && !options.skipSynchronization;
         const sendResponsePromise = performSynchronization
           ? this.synchronizeNetwork()
           : Promise.resolve();
 
-        const animationsSettledPromise = performSynchronization ? new Promise(resolve => {
-          const interval = setInterval(() => {
-            Object.entries(animationTimeById).forEach(async ([id, duration]) => {
-              let result = { currentTime: null };
-              try {
-                result = await client.send('Animation.getCurrentTime', {
-                  'id': id,
+        const animationsSettledPromise = performSynchronization
+          ? new Promise((resolve) => {
+              const interval = setInterval(() => {
+                Object.entries(animationTimeById).forEach(async ([id, duration]) => {
+                  let result: { currentTime: number | null } = {
+                    currentTime: null,
+                  };
+                  try {
+                    result = (await client.send('Animation.getCurrentTime', {
+                      id: id,
+                    })) as any;
+                    // if this call errors out, just assume the animation is done
+                  } catch (e) {}
+                  if (result.currentTime === null || result.currentTime > duration) {
+                    delete animationTimeById[id];
+                  }
                 });
-                // if this call errors out, just assume the animation is done
-              } catch (e) {}
-              if (result.currentTime === null || result.currentTime > duration) {
-                delete animationTimeById[id];
-              }
-            });
-            if (Object.keys(animationTimeById).length === 0) {
-              clearInterval(interval);
-              resolve();
-            }
-          }, 100);
-        }) : Promise.resolve();
+                if (Object.keys(animationTimeById).length === 0) {
+                  clearInterval(interval);
+                  resolve();
+                }
+              }, 100);
+            })
+          : Promise.resolve();
 
         return sendResponsePromise
           .then(() => animationsSettledPromise)
           .then(() => {
             if (!performSynchronization) return;
-            return page.waitFor(() => {
+            return page!.waitFor(() => {
+              // @ts-ignore
               return Object.keys(window._detoxTimeouts || {}).length === 0;
             });
           })
@@ -488,12 +512,18 @@ class PuppeteerTestee {
           return;
         } else if (action.type === 'deliverPayload') {
           if (action.params && action.params.url) {
-            await page.goto(action.params.url, { waitUntil: 'networkidle2' });
+            await page!.goto(action.params.url, { waitUntil: 'networkidle2' });
             // await setupDetoxTimeouts();
           }
-          await sendResponse({ type: 'deliverPayloadDone', messageId: action.messageId });
+          await sendResponse({
+            type: 'deliverPayloadDone',
+            messageId: action.messageId,
+          });
         } else if (action.type === 'currentStatus') {
-          await sendResponse({ type: 'currentStatusResult', params: { resources: [] } }, { skipSynchronization: true });
+          await sendResponse(
+            { type: 'currentStatusResult', params: { resources: [] } },
+            { skipSynchronization: true },
+          );
         } else {
           try {
             if (enableSynchronization) {
@@ -501,15 +531,28 @@ class PuppeteerTestee {
             }
             const result = await this.invoke(action.params);
             if (result === false || result === null) throw new Error('invalid result');
-            await sendResponse({ type: 'invokeResult', messageId: action.messageId });
+            await sendResponse({
+              type: 'invokeResult',
+              messageId: action.messageId,
+            });
           } catch (error) {
-            this.client.ws.ws.send(JSON.stringify({ type: 'testFailed', messageId, params: { details: str + '\n' + error.message } }))
+            this.client.ws.ws.send(
+              JSON.stringify({
+                type: 'testFailed',
+                messageId,
+                params: { details: str + '\n' + error.message },
+              }),
+            );
           }
         }
       } catch (error) {
         console.error(error);
-        await sendResponse({ type: 'error', messageId: messageId, params: { error } });
-        await browser.close();
+        await sendResponse({
+          type: 'error',
+          messageId: messageId,
+          params: { error },
+        });
+        await browser!.close();
         browser = null;
       }
     });
@@ -533,7 +576,7 @@ class PuppeteerDriver extends DeviceDriverBase {
       // instruments: (api) => new SimulatorInstrumentsPlugin({ api, client }),
       // log: (api) => new SimulatorLogPlugin({ api, appleSimUtils }),
       screenshot: (api) => new PuppeteerScreenshotPlugin({ api, driver: this }),
-      video: (api) => new PuppeteerRecordVideoPlugin({ api, driver: this })
+      video: (api) => new PuppeteerRecordVideoPlugin({ api, driver: this }),
     };
   }
 
@@ -563,11 +606,11 @@ class PuppeteerDriver extends DeviceDriverBase {
   }
 
   async setOrientation(deviceId, orientation) {
-    const viewport = await page.viewport();
+    const viewport = await page!.viewport();
     const isLandscape = orientation === 'landscape';
     const largerDimension = Math.max(viewport.width, viewport.height);
     const smallerDimension = Math.min(viewport.width, viewport.height);
-    await page.setViewport({
+    await page!.setViewport({
       ...viewport,
       isLandscape,
       width: isLandscape ? largerDimension : smallerDimension,
@@ -588,23 +631,23 @@ class PuppeteerDriver extends DeviceDriverBase {
   }
 
   async recordVideo(deviceId) {
-    await page.evaluate(filename=>{
-      window.postMessage({ type: 'REC_START' }, '*')
-    })
+    await page!.evaluate((filename) => {
+      window.postMessage({ type: 'REC_START' }, '*');
+    });
   }
 
   async stopVideo(deviceId) {
-    const exportname = `puppet${Math.random()}.webm`
-    await page.evaluate(filename=>{
-      window.postMessage({type: 'SET_EXPORT_PATH', filename: filename}, '*')
-      window.postMessage({type: 'REC_STOP'}, '*')
-    }, exportname)
+    const exportname = `puppet${Math.random()}.webm`;
+    await page!.evaluate((filename) => {
+      window.postMessage({ type: 'SET_EXPORT_PATH', filename: filename }, '*');
+      window.postMessage({ type: 'REC_STOP' }, '*');
+    }, exportname);
     // try{
     // console.log("waitForSelector");
-      await page.waitForSelector('html.downloadComplete', { timeout: 5000 });
+    await page!.waitForSelector('html.downloadComplete', { timeout: 5000 });
     // } catch (e) {
-      // noop. This waitFor could fail if the page navigates away before
-      // detecting the download
+    // noop. This waitFor could fail if the page navigates away before
+    // detecting the download
     // }
     // console.log("after DL");
     // TODO use generic chrome downloads path
@@ -655,12 +698,12 @@ class PuppeteerDriver extends DeviceDriverBase {
     // }
   }
 
-  async _boot(deviceId) {
-    debug('PuppeteerDriver.boot', { deviceId, bundleId });
-    const deviceLaunchArgs = argparse.getArgValue('deviceLaunchArgs');
-    const coldBoot = await this.applesimutils.boot(deviceId, deviceLaunchArgs);
-    await this.emitter.emit('bootDevice', { coldBoot, deviceId });
-  }
+  // async _boot(deviceId) {
+  //   debug("PuppeteerDriver.boot", { deviceId, bundleId });
+  //   const deviceLaunchArgs = argparse.getArgValue("deviceLaunchArgs");
+  //   const coldBoot = await this.applesimutils.boot(deviceId, deviceLaunchArgs);
+  //   await this.emitter.emit("bootDevice", { coldBoot, deviceId });
+  // }
 
   async installApp(deviceId, binaryPath) {
     debug('installApp', { deviceId, binaryPath });
@@ -677,35 +720,52 @@ class PuppeteerDriver extends DeviceDriverBase {
   }
 
   async launchApp(deviceId, bundleId, launchArgs, languageAndLocale) {
-    debug('launchApp', { browser: !!browser, deviceId, bundleId, launchArgs, languageAndLocale });
-    await this.emitter.emit('beforeLaunchApp', { bundleId, deviceId, launchArgs });
-
-    const extensionDirectory = "/Users/awinograd/programming/puppetcam";
-    browser = browser || await puppeteer.launch({
-      devtools: false,
-      headless: true,
-      defaultViewport:  launchArgs.viewport || this._getDefaultViewport(),
-      // ignoreDefaultArgs: ['--enable-automation'], // works, but shows "not your default browser toolbar"
-      args: [
-        '--no-sandbox',
-        '--enable-usermedia-screen-capturing',
-        '--allow-http-screen-capture',
-        '--allow-file-access-from-files',
-        '--auto-select-desktop-capture-source=puppetcam',
-        '--load-extension=' + extensionDirectory,
-        '--disable-extensions-except=' + extensionDirectory,
-      ]
+    debug('launchApp', {
+      browser: !!browser,
+      deviceId,
+      bundleId,
+      launchArgs,
+      languageAndLocale,
     });
-    this._applyPermissions();
+    await this.emitter.emit('beforeLaunchApp', {
+      bundleId,
+      deviceId,
+      launchArgs,
+    });
+
+    const extensionDirectory = '/Users/awinograd/programming/puppetcam';
+    browser =
+      browser ||
+      (await puppeteer.launch({
+        devtools: false,
+        headless: true,
+        defaultViewport: launchArgs.viewport || this._getDefaultViewport(),
+        // ignoreDefaultArgs: ['--enable-automation'], // works, but shows "not your default browser toolbar"
+        args: [
+          '--no-sandbox',
+          '--enable-usermedia-screen-capturing',
+          '--allow-http-screen-capture',
+          '--allow-file-access-from-files',
+          '--auto-select-desktop-capture-source=puppetcam',
+          '--load-extension=' + extensionDirectory,
+          '--disable-extensions-except=' + extensionDirectory,
+        ],
+      }));
+    this._applyPermissions(deviceId, bundleId);
 
     const url = launchArgs.detoxURLOverride || this.deviceConfig.binaryPath.slice(1);
     if (url) {
       page = (await browser.pages())[0];
-      await page.goto(url, { waitUntil: 'networkidle2' });
+      await page!.goto(url, { waitUntil: 'networkidle2' });
     }
     // const pid = await this.applesimutils.launch(deviceId, bundleId, launchArgs, languageAndLocale);
     const pid = 'PID';
-    await this.emitter.emit('launchApp', { bundleId, deviceId, launchArgs, pid });
+    await this.emitter.emit('launchApp', {
+      bundleId,
+      deviceId,
+      launchArgs,
+      pid,
+    });
 
     return pid;
   }
@@ -728,7 +788,7 @@ class PuppeteerDriver extends DeviceDriverBase {
   }
 
   async sendToHome(deviceId) {
-    await page.goto('https://google.com')
+    await page!.goto('https://google.com');
   }
 
   async shutdown(deviceId) {
@@ -738,13 +798,13 @@ class PuppeteerDriver extends DeviceDriverBase {
   }
 
   async setLocation(deviceId, latitude, longitude) {
-    await page.setGeolocation({
+    await page!.setGeolocation({
       latitude: Number.parseFloat(latitude),
       longitude: Number.parseFloat(longitude),
     });
   }
 
-  async setPermissions(deviceId, bundleId, permissions) {
+  async setPermissions(deviceId, bundleId, permissions: { [key: string]: string }) {
     debug('setPermissions', { deviceId, bundleId, permissions });
     const PERMISSIONS_LOOKUP = {
       // calendar: '',
@@ -762,22 +822,23 @@ class PuppeteerDriver extends DeviceDriverBase {
       // reminders: '',
       // siri: '',
       // speech: '',
-    }
+    };
     this.requestedPermissions = [];
-    const requestedPermissions = Object.entries(permissions).filter(([key, value]) => {
-      return !['NO', 'unset', 'never', ''].includes(value || '');
-    })
+    const requestedPermissions = Object.entries(permissions)
+      .filter(([key, value]) => {
+        return !['NO', 'unset', 'never', ''].includes(value || '');
+      })
       .map(([key]) => PERMISSIONS_LOOKUP[key])
-      .filter(equivalentPermission => !!equivalentPermission);
+      .filter((equivalentPermission) => !!equivalentPermission);
     this.requestedPermissions = requestedPermissions;
   }
 
-  async _applyPermissions(deviceId, bundleId) {
+  async _applyPermissions(deviceId: string, bundleId: string) {
     if (browser && this.requestedPermissions) {
       const context = browser.defaultBrowserContext();
       await context.clearPermissionOverrides();
-      const url = await page.url();
-      await context.overridePermissions(new URL(url).origin, this.requestedPermissions)
+      const url = await page!.url();
+      await context.overridePermissions(new URL(url).origin, this.requestedPermissions);
     }
   }
 
@@ -786,16 +847,20 @@ class PuppeteerDriver extends DeviceDriverBase {
   }
 
   async resetContentAndSettings(deviceId) {
-    await this.shutdown(deviceId);
-    await this.applesimutils.resetContentAndSettings(deviceId);
-    await this._boot(deviceId);
+    debug('TODO resetContentAndSettings');
+    // await this.shutdown(deviceId);
+    // await this.applesimutils.resetContentAndSettings(deviceId);
+    // await this._boot(deviceId);
   }
 
   validateDeviceConfig(deviceConfig) {
     this.deviceConfig = deviceConfig;
     debug('validateDeviceConfig', deviceConfig);
     if (!deviceConfig.binaryPath) {
-      console.error('PuppeteerDriver requires binaryPath to be set in detox config in the format `/${URL}`');
+      console.error(
+        'PuppeteerDriver requires binaryPath to be set in detox config in the format `/${URL}`',
+      );
+      // @ts-ignore
       configuration.throwOnEmptyBinaryPath();
     }
   }
@@ -812,12 +877,12 @@ class PuppeteerDriver extends DeviceDriverBase {
 
   async takeScreenshot(udid, screenshotName) {
     const tempPath = await temporaryPath.for.png();
-    await page.screenshot({ path: tempPath });
+    await page!.screenshot({ path: tempPath });
 
     await this.emitter.emit('createExternalArtifact', {
       pluginId: 'screenshot',
       artifactName: screenshotName,
-      artifactPath: tempPath
+      artifactPath: tempPath,
     });
 
     return tempPath;
@@ -838,10 +903,10 @@ class PuppeteerDriver extends DeviceDriverBase {
   async reloadReactNative() {
     const url = this.deviceConfig.binaryPath.slice(1);
     if (url) {
-      page = (await browser.pages())[0];
-      await page.goto(url, { waitUntil: 'networkidle2' });
+      page = (await browser!.pages())[0];
+      await page!.goto(url, { waitUntil: 'networkidle2' });
     }
   }
 }
 
-module.exports = PuppeteerDriver;
+export default PuppeteerDriver;
