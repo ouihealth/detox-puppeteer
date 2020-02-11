@@ -3,11 +3,7 @@
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
-    "paths": {
-      "@src/*": ["./src/*"],
-      "@e2e/*": ["./e2e/*"],
-      "@gqltype/*": ["./src/types/generated/*"]
-    },
+    "paths": {},
     "checkJs": false,
     "declaration": false,
     "experimentalDecorators": true,
@@ -28,7 +24,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es2015"
+    "target": "es6"
   },
   "include": ["./*.ts", "./*.tsx", "scripts/**/*", "src/**/*", "e2e/**/*"],
   "exclude": ["node_modules"]

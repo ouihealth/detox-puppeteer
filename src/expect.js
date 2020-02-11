@@ -1,5 +1,5 @@
 const invoke = require('detox/src/invoke');
-const matchers = require('@src/matchers');
+const matchers = require('./matchers');
 const Matcher = matchers.Matcher;
 const LabelMatcher = matchers.LabelMatcher;
 const IndexMatcher = matchers.IndexMatcher;

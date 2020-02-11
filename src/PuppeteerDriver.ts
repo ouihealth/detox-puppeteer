@@ -9,10 +9,10 @@ const temporaryPath = require('detox/src/artifacts/utils/temporaryPath');
 const Client = require('detox/src/client/Client');
 const { LoginTestee } = require('detox/src/client/actions/actions');
 
-import WebExpect from '@src/expect';
 import puppeteer from 'puppeteer';
-const PuppeteerScreenshotPlugin = require('@src/PuppeteerScreenshotPlugin');
-const PuppeteerRecordVideoPlugin = require('@src/PuppeteerRecordVideoPlugin');
+import WebExpect from './expect';
+const PuppeteerScreenshotPlugin = require('./PuppeteerScreenshotPlugin');
+const PuppeteerRecordVideoPlugin = require('./PuppeteerRecordVideoPlugin');
 
 // @ts-ignore
 function sleep(ms: number) {
