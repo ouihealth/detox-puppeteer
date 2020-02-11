@@ -7,12 +7,12 @@ const DeviceDriverBase = require('detox/src/devices/drivers/DeviceDriverBase');
 const InvocationManager = require('detox/src/invoke').InvocationManager;
 const temporaryPath = require('detox/src/artifacts/utils/temporaryPath');
 const Client = require('detox/src/client/Client');
-const { LoginTestee } = require('detox/src/client/actions/actions');
 
 import puppeteer from 'puppeteer';
 import WebExpect from './expect';
-const PuppeteerScreenshotPlugin = require('./PuppeteerScreenshotPlugin');
-const PuppeteerRecordVideoPlugin = require('./PuppeteerRecordVideoPlugin');
+import PuppeteerScreenshotPlugin from './PuppeteerScreenshotPlugin';
+import PuppeteerRecordVideoPlugin from './PuppeteerRecordVideoPlugin';
+import LoginTestee from './LoginTesteeAction';
 
 // @ts-ignore
 function sleep(ms: number) {

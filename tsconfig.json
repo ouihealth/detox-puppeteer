@@ -10,8 +10,6 @@
     "importHelpers": true,
     "jsx": "preserve",
     "lib": ["dom", "esnext"],
-    "module": "esNext",
-    "moduleResolution": "node",
     "noErrorTruncation": true,
     "noEmitHelpers": true,
     "noFallthroughCasesInSwitch": true,
@@ -20,12 +18,11 @@
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "outDir": "build",
-    "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es6"
+    "target": "esnext"
   },
-  "include": ["./*.ts", "./*.tsx", "scripts/**/*", "src/**/*", "e2e/**/*"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }
