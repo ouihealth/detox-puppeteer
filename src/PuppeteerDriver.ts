@@ -1,19 +1,18 @@
 import * as _ from 'lodash';
 const path = require('path');
 const fs = require('fs');
-const log = require('../../utils/logger').child({ __filename });
+
+const log = require('detox/src/utils/logger').child({ __filename });
 const DeviceDriverBase = require('detox/src/devices/drivers/DeviceDriverBase');
 const InvocationManager = require('detox/src/invoke').InvocationManager;
-
 const temporaryPath = require('detox/src/artifacts/utils/temporaryPath');
-const PuppeteerScreenshotPlugin = require('@src/PuppeteerScreenshotPlugin');
-const PuppeteerRecordVideoPlugin = require('@src/PuppeteerRecordVideoPlugin');
-import WebExpect from '@src/expect';
-
-// const puppeteer = require('puppeteer');
-import puppeteer from 'puppeteer';
 const Client = require('detox/src/client/Client');
 const { LoginTestee } = require('detox/src/client/actions/actions');
+
+import WebExpect from '@src/expect';
+import puppeteer from 'puppeteer';
+const PuppeteerScreenshotPlugin = require('@src/PuppeteerScreenshotPlugin');
+const PuppeteerRecordVideoPlugin = require('@src/PuppeteerRecordVideoPlugin');
 
 // @ts-ignore
 function sleep(ms: number) {

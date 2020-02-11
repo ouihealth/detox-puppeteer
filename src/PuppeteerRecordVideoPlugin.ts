@@ -1,10 +1,8 @@
 const fs = require('fs-extra');
-const log = require('../../utils/logger').child({ __filename });
-const temporaryPath = require('../utils/temporaryPath');
-const VideoArtifactPlugin = require('./VideoArtifactPlugin');
-const Artifact = require('../templates/artifact/Artifact');
-const FileArtifact = require('../templates/artifact/FileArtifact');
-const { interruptProcess } = require('../../utils/exec');
+const log = require('detox/src/utils/logger').child({ __filename });
+const VideoArtifactPlugin = require('detox/src/artifacts/video/VideoArtifactPlugin');
+const Artifact = require('detox/src/artifacts/templates/artifact/Artifact');
+const FileArtifact = require('detox/src/artifacts/templates/artifact/FileArtifact');
 
 class PuppeteerRecordVideoPlugin extends VideoArtifactPlugin {
   constructor(config) {
@@ -16,12 +14,11 @@ class PuppeteerRecordVideoPlugin extends VideoArtifactPlugin {
   createTestRecording() {
     const { context } = this;
     let temporaryFilePath;
-    let processPromise = null;
 
     return new Artifact({
       name: 'PuppeteerVideoRecording',
       start: async () => {
-        await this.driver.recordVideo(context.deviceId)
+        await this.driver.recordVideo(context.deviceId);
       },
       stop: async () => {
         temporaryFilePath = await this.driver.stopVideo(context.deviceId);
@@ -36,4 +33,4 @@ class PuppeteerRecordVideoPlugin extends VideoArtifactPlugin {
   }
 }
 
-module.exports = PuppeteerRecordVideoPlugin;
+export default PuppeteerRecordVideoPlugin;

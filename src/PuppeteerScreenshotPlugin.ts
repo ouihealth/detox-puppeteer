@@ -1,8 +1,7 @@
-const _ = require('lodash');
-const log = require('../../utils/logger').child({ __filename });
-const temporaryPath = require('../utils/temporaryPath');
-const FileArtifact = require('../templates/artifact/FileArtifact');
-const ScreenshotArtifactPlugin = require('./ScreenshotArtifactPlugin');
+import * as _ from 'lodash';
+const temporaryPath = require('detox/src/artifacts/utils/temporaryPath');
+const FileArtifact = require('detox/src/artifacts/templates/artifact/FileArtifact');
+const ScreenshotArtifactPlugin = require('detox/src/artifacts/screenshots/ScreenshotArtifactPlugin');
 
 class PuppeteerScreenshotPlugin extends ScreenshotArtifactPlugin {
   constructor(config) {
@@ -12,7 +11,7 @@ class PuppeteerScreenshotPlugin extends ScreenshotArtifactPlugin {
   }
 
   createTestArtifact() {
-    const { driver, context, appleSimUtils } = this;
+    const { driver, context } = this;
 
     return new FileArtifact({
       name: 'PuppeteerScreenshot',
@@ -20,9 +19,9 @@ class PuppeteerScreenshotPlugin extends ScreenshotArtifactPlugin {
       async start() {
         this.temporaryPath = temporaryPath.for.png();
         await driver.takeScreenshot(context.deviceId, this.temporaryPath);
-      }
+      },
     });
   }
 }
 
-module.exports = PuppeteerScreenshotPlugin;
+export default PuppeteerScreenshotPlugin;

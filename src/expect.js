@@ -1,5 +1,5 @@
-const invoke = require('../invoke');
-const matchers = require('./matchers');
+const invoke = require('detox/src/invoke');
+const matchers = require('@src/matchers');
 const Matcher = matchers.Matcher;
 const LabelMatcher = matchers.LabelMatcher;
 const IndexMatcher = matchers.IndexMatcher;
@@ -26,10 +26,10 @@ class TapAction extends Action {
     this._call = {
       target: {
         type: 'action',
-        value: 'action'
+        value: 'action',
       },
       method: 'tap',
-      args: []
+      args: [],
     };
   }
 }
@@ -40,10 +40,10 @@ class TapAtPointAction extends Action {
     this._call = {
       target: {
         type: 'action',
-        value: 'action'
+        value: 'action',
       },
       method: 'tapAtPoint',
-      args: [value] // NB value is currently unused
+      args: [value], // NB value is currently unused
     };
   }
 }
@@ -55,19 +55,19 @@ class LongPressAction extends Action {
       this._call = {
         target: {
           type: 'action',
-          value: 'action'
+          value: 'action',
         },
         method: 'longPress',
-        args: [700] // https://github.com/google/EarlGrey/blob/91c27bb8a15e723df974f620f7f576a30a6a7484/EarlGrey/Common/GREYConstants.m#L27
+        args: [700], // https://github.com/google/EarlGrey/blob/91c27bb8a15e723df974f620f7f576a30a6a7484/EarlGrey/Common/GREYConstants.m#L27
       };
     } else {
       this._call = {
         target: {
           type: 'action',
-          value: 'action'
+          value: 'action',
         },
         method: 'longPress',
-        args: [duration]
+        args: [duration],
       };
     }
   }
@@ -79,10 +79,10 @@ class MultiTapAction extends Action {
     this._call = {
       target: {
         type: 'action',
-        value: 'action'
+        value: 'action',
       },
       method: 'multiTap',
-      args: [value]
+      args: [value],
     };
   }
 }
@@ -90,13 +90,20 @@ class MultiTapAction extends Action {
 class PinchAction extends Action {
   constructor(direction, speed, angle) {
     super();
-    if (typeof direction !== 'string') throw new Error(`PinchAction ctor 1st argument must be a string, got ${typeof direction}`);
-    if (typeof speed !== 'string') throw new Error(`PinchAction ctor 2nd argument must be a string, got ${typeof speed}`);
-    if (typeof angle !== 'number') throw new Error(`PinchAction ctor 3nd argument must be a number, got ${typeof angle}`);
+    if (typeof direction !== 'string')
+      throw new Error(`PinchAction ctor 1st argument must be a string, got ${typeof direction}`);
+    if (typeof speed !== 'string')
+      throw new Error(`PinchAction ctor 2nd argument must be a string, got ${typeof speed}`);
+    if (typeof angle !== 'number')
+      throw new Error(`PinchAction ctor 3nd argument must be a number, got ${typeof angle}`);
     if (speed === 'fast') {
-      this._call = invoke.callDirectly(GreyActions.actionForPinchFastInDirectionWithAngle(direction, angle));
+      this._call = invoke.callDirectly(
+        GreyActions.actionForPinchFastInDirectionWithAngle(direction, angle),
+      );
     } else if (speed === 'slow') {
-      this._call = invoke.callDirectly(GreyActions.actionForPinchSlowInDirectionWithAngle(direction, angle));
+      this._call = invoke.callDirectly(
+        GreyActions.actionForPinchSlowInDirectionWithAngle(direction, angle),
+      );
     } else {
       throw new Error(`PinchAction speed must be a 'fast'/'slow', got ${speed}`);
     }
@@ -109,10 +116,10 @@ class TypeTextAction extends Action {
     this._call = {
       target: {
         type: 'action',
-        value: 'action'
+        value: 'action',
       },
       method: 'typeText',
-      args: [value]
+      args: [value],
     };
   }
 }
@@ -123,10 +130,10 @@ class KeyboardPressAction extends Action {
     this._call = {
       target: {
         type: 'action',
-        value: 'action'
+        value: 'action',
       },
       method: 'keyboardPress',
-      args: [value]
+      args: [value],
     };
   }
 }
@@ -137,10 +144,10 @@ class ReplaceTextAction extends Action {
     this._call = {
       target: {
         type: 'action',
-        value: 'action'
+        value: 'action',
       },
       method: 'replaceText',
-      args: [value]
+      args: [value],
     };
   }
 }
@@ -151,10 +158,10 @@ class ClearTextAction extends Action {
     this._call = {
       target: {
         type: 'action',
-        value: 'action'
+        value: 'action',
       },
       method: 'clearText',
-      args: []
+      args: [],
     };
   }
 }
@@ -165,10 +172,10 @@ class ScrollAmountAction extends Action {
     this._call = {
       target: {
         type: 'action',
-        value: 'action'
+        value: 'action',
       },
       method: 'scroll',
-      args: [direction, amount]
+      args: [direction, amount],
     };
   }
 }
@@ -180,10 +187,10 @@ class ScrollEdgeAction extends Action {
     this._call = {
       target: {
         type: 'action',
-        value: 'action'
+        value: 'action',
       },
       method: 'scrollTo',
-      args: [edge]
+      args: [edge],
     };
   }
 }
@@ -191,16 +198,18 @@ class ScrollEdgeAction extends Action {
 class SwipeAction extends Action {
   constructor(direction, speed, percentage) {
     super();
-    if (typeof direction !== 'string') throw new Error(`SwipeAction ctor 1st argument must be a string, got ${typeof direction}`);
-    if (typeof speed !== 'string') throw new Error(`SwipeAction ctor 2nd argument must be a string, got ${typeof speed}`);
+    if (typeof direction !== 'string')
+      throw new Error(`SwipeAction ctor 1st argument must be a string, got ${typeof direction}`);
+    if (typeof speed !== 'string')
+      throw new Error(`SwipeAction ctor 2nd argument must be a string, got ${typeof speed}`);
 
     this._call = {
       target: {
         type: 'action',
-        value: 'action'
+        value: 'action',
       },
       method: 'swipe',
-      args: [direction, speed, percentage]
+      args: [direction, speed, percentage],
     };
   }
 }
@@ -215,7 +224,9 @@ class ScrollColumnToValue extends Action {
 class SetDatePickerDate extends Action {
   constructor(dateString, dateFormat) {
     super();
-    this._call = invoke.callDirectly(GreyActionsDetox.detoxSetDatePickerDateWithFormat(dateString, dateFormat));
+    this._call = invoke.callDirectly(
+      GreyActionsDetox.detoxSetDatePickerDateWithFormat(dateString, dateFormat),
+    );
   }
 }
 
@@ -238,10 +249,10 @@ class ActionInteraction extends Interaction {
     this._call = {
       target: {
         type: 'this',
-        value: 'this'
+        value: 'this',
       },
       method: 'performAction',
-      args: [invoke.callDirectly(callThunk(element)), callThunk(action)]
+      args: [invoke.callDirectly(callThunk(element)), callThunk(action)],
     };
   }
 }
@@ -253,7 +264,7 @@ class MatcherAssertionInteraction extends Interaction {
     this._call = {
       target: 'this',
       method: 'assertWithMatcher',
-      args: [invoke.callDirectly(callThunk(element)), callThunk(matcher)]
+      args: [invoke.callDirectly(callThunk(element)), callThunk(matcher)],
     };
   }
 }
@@ -269,7 +280,10 @@ class WaitForInteraction extends Interaction {
     this._element._selectElementWithMatcher(this._element._originalMatcher, this._originalMatcher);
   }
   async withTimeout(timeout) {
-    if (typeof timeout !== 'number') throw new Error(`WaitForInteraction withTimeout argument must be a number, got ${typeof timeout}`);
+    if (typeof timeout !== 'number')
+      throw new Error(
+        `WaitForInteraction withTimeout argument must be a number, got ${typeof timeout}`,
+      );
     if (timeout < 0) throw new Error('timeout must be larger than 0');
 
     let _conditionCall;
@@ -278,17 +292,22 @@ class WaitForInteraction extends Interaction {
     call.args.push({
       target: {
         type: 'matcher',
-        value: 'matcher'
+        value: 'matcher',
       },
       method: 'option',
-      args: [{ timeout }]
+      args: [{ timeout }],
     });
     this._call = call;
     // this._call = GreyCondition.waitWithTimeout(invoke.callDirectly(_conditionCall), timeout / 1000);
     await this.execute();
   }
   whileElement(searchMatcher) {
-    return new WaitForActionInteraction(this._invocationManager, this._element, this._originalMatcher, searchMatcher);
+    return new WaitForActionInteraction(
+      this._invocationManager,
+      this._element,
+      this._originalMatcher,
+      searchMatcher,
+    );
   }
 }
 
@@ -298,7 +317,9 @@ class WaitForActionInteraction extends Interaction {
     //if (!(element instanceof Element)) throw new Error(`WaitForActionInteraction ctor 1st argument must be a valid Element, got ${typeof element}`);
     //if (!(matcher instanceof Matcher)) throw new Error(`WaitForActionInteraction ctor 2nd argument must be a valid Matcher, got ${typeof matcher}`);
     if (!(searchMatcher instanceof Matcher))
-      throw new Error(`WaitForActionInteraction ctor 3rd argument must be a valid Matcher, got ${typeof searchMatcher}`);
+      throw new Error(
+        `WaitForActionInteraction ctor 3rd argument must be a valid Matcher, got ${typeof searchMatcher}`,
+      );
     this._element = element;
     this._originalMatcher = matcher;
     this._searchMatcher = searchMatcher;
@@ -308,10 +329,13 @@ class WaitForActionInteraction extends Interaction {
     const _interactionCall = GreyInteraction.usingSearchActionOnElementWithMatcher(
       invoke.callDirectly(callThunk(this._element)),
       callThunk(searchAction),
-      callThunk(this._searchMatcher)
+      callThunk(this._searchMatcher),
     );
 
-    this._call = GreyInteraction.assertWithMatcher(invoke.callDirectly(_interactionCall), callThunk(this._originalMatcher));
+    this._call = GreyInteraction.assertWithMatcher(
+      invoke.callDirectly(_interactionCall),
+      callThunk(this._originalMatcher),
+    );
     await this.execute();
   }
   async scroll(amount, direction = 'down', startScrollX, startScrollY) {
@@ -334,17 +358,18 @@ class Element {
     this._call = invoke.call(
       {
         type: 'this',
-        value: 'this'
+        value: 'this',
       },
       'selectElementWithMatcher',
-      ...matchers.map((m) => m._call)
+      ...matchers.map((m) => m._call),
     );
     // if (this._atIndex !== undefined) {
     //   this.atIndex(this._atIndex);
     // }
   }
   atIndex(index) {
-    if (typeof index !== 'number') throw new Error(`Element atIndex argument must be a number, got ${typeof index}`);
+    if (typeof index !== 'number')
+      throw new Error(`Element atIndex argument must be a number, got ${typeof index}`);
     const _originalCall = this._call;
     this._atIndex = index;
     this._selectElementWithMatcher(this._originalMatcher, new IndexMatcher(index));
@@ -354,31 +379,67 @@ class Element {
     return await new ActionInteraction(this._invocationManager, this, new TapAction()).execute();
   }
   async tapAtPoint(value) {
-    return await new ActionInteraction(this._invocationManager, this, new TapAtPointAction(value)).execute();
+    return await new ActionInteraction(
+      this._invocationManager,
+      this,
+      new TapAtPointAction(value),
+    ).execute();
   }
   async longPress(duration) {
-    return await new ActionInteraction(this._invocationManager, this, new LongPressAction(duration)).execute();
+    return await new ActionInteraction(
+      this._invocationManager,
+      this,
+      new LongPressAction(duration),
+    ).execute();
   }
   async multiTap(value) {
-    return await new ActionInteraction(this._invocationManager, this, new MultiTapAction(value)).execute();
+    return await new ActionInteraction(
+      this._invocationManager,
+      this,
+      new MultiTapAction(value),
+    ).execute();
   }
   async tapBackspaceKey() {
-    return await new ActionInteraction(this._invocationManager, this, new KeyboardPressAction('Backspace')).execute();
+    return await new ActionInteraction(
+      this._invocationManager,
+      this,
+      new KeyboardPressAction('Backspace'),
+    ).execute();
   }
   async tapReturnKey() {
-    return await new ActionInteraction(this._invocationManager, this, new TypeTextAction(String.fromCharCode(13))).execute();
+    return await new ActionInteraction(
+      this._invocationManager,
+      this,
+      new TypeTextAction(String.fromCharCode(13)),
+    ).execute();
   }
   async typeText(value) {
-    return await new ActionInteraction(this._invocationManager, this, new TypeTextAction(value)).execute();
+    return await new ActionInteraction(
+      this._invocationManager,
+      this,
+      new TypeTextAction(value),
+    ).execute();
   }
   async replaceText(value) {
-    return await new ActionInteraction(this._invocationManager, this, new ReplaceTextAction(value)).execute();
+    return await new ActionInteraction(
+      this._invocationManager,
+      this,
+      new ReplaceTextAction(value),
+    ).execute();
   }
   async clearText() {
-    return await new ActionInteraction(this._invocationManager, this, new ClearTextAction()).execute();
+    return await new ActionInteraction(
+      this._invocationManager,
+      this,
+      new ClearTextAction(),
+    ).execute();
   }
   async pinchWithAngle(direction, speed = 'slow', angle = 0) {
-    return await new ActionInteraction(this._invocationManager, this, new PinchAction(direction, speed, angle)).execute();
+    return await new ActionInteraction(
+      this._invocationManager,
+      this,
+      new PinchAction(direction, speed, angle),
+    ).execute();
   }
   async scroll(amount, direction = 'down', startScrollX, startScrollY) {
     // override the user's element selection with an extended matcher that looks for UIScrollView children
@@ -386,24 +447,40 @@ class Element {
     return await new ActionInteraction(
       this._invocationManager,
       this,
-      new ScrollAmountAction(direction, amount, startScrollX, startScrollY)
+      new ScrollAmountAction(direction, amount, startScrollX, startScrollY),
     ).execute();
   }
   async scrollTo(edge) {
     // override the user's element selection with an extended matcher that looks for UIScrollView children
     // this._selectElementWithMatcher(this._originalMatcher._extendToDescendantScrollViews());
-    return await new ActionInteraction(this._invocationManager, this, new ScrollEdgeAction(edge)).execute();
+    return await new ActionInteraction(
+      this._invocationManager,
+      this,
+      new ScrollEdgeAction(edge),
+    ).execute();
   }
   async swipe(direction, speed = 'fast', percentage = 0) {
-    return await new ActionInteraction(this._invocationManager, this, new SwipeAction(direction, speed, percentage)).execute();
+    return await new ActionInteraction(
+      this._invocationManager,
+      this,
+      new SwipeAction(direction, speed, percentage),
+    ).execute();
   }
   async setColumnToValue(column, value) {
     // override the user's element selection with an extended matcher that supports RN's date picker
     this._selectElementWithMatcher(this._originalMatcher._extendPickerViewMatching());
-    return await new ActionInteraction(this._invocationManager, this, new ScrollColumnToValue(column, value)).execute();
+    return await new ActionInteraction(
+      this._invocationManager,
+      this,
+      new ScrollColumnToValue(column, value),
+    ).execute();
   }
   async setDatePickerDate(dateString, dateFormat) {
-    return await new ActionInteraction(this._invocationManager, this, new SetDatePickerDate(dateString, dateFormat)).execute();
+    return await new ActionInteraction(
+      this._invocationManager,
+      this,
+      new SetDatePickerDate(dateString, dateFormat),
+    ).execute();
   }
 }
 
@@ -419,28 +496,60 @@ class ExpectElement extends Expect {
     this._element = element;
   }
   async toBeVisible() {
-    return await new MatcherAssertionInteraction(this._invocationManager, this._element, new VisibleMatcher()).execute();
+    return await new MatcherAssertionInteraction(
+      this._invocationManager,
+      this._element,
+      new VisibleMatcher(),
+    ).execute();
   }
   async toBeNotVisible() {
-    return await new MatcherAssertionInteraction(this._invocationManager, this._element, new NotVisibleMatcher()).execute();
+    return await new MatcherAssertionInteraction(
+      this._invocationManager,
+      this._element,
+      new NotVisibleMatcher(),
+    ).execute();
   }
   async toExist() {
-    return await new MatcherAssertionInteraction(this._invocationManager, this._element, new ExistsMatcher()).execute();
+    return await new MatcherAssertionInteraction(
+      this._invocationManager,
+      this._element,
+      new ExistsMatcher(),
+    ).execute();
   }
   async toNotExist() {
-    return await new MatcherAssertionInteraction(this._invocationManager, this._element, new NotExistsMatcher()).execute();
+    return await new MatcherAssertionInteraction(
+      this._invocationManager,
+      this._element,
+      new NotExistsMatcher(),
+    ).execute();
   }
   async toHaveText(value) {
-    return await new MatcherAssertionInteraction(this._invocationManager, this._element, new TextMatcher(value)).execute();
+    return await new MatcherAssertionInteraction(
+      this._invocationManager,
+      this._element,
+      new TextMatcher(value),
+    ).execute();
   }
   async toHaveLabel(value) {
-    return await new MatcherAssertionInteraction(this._invocationManager, this._element, new LabelMatcher(value)).execute();
+    return await new MatcherAssertionInteraction(
+      this._invocationManager,
+      this._element,
+      new LabelMatcher(value),
+    ).execute();
   }
   async toHaveId(value) {
-    return await new MatcherAssertionInteraction(this._invocationManager, this._element, new IdMatcher(value)).execute();
+    return await new MatcherAssertionInteraction(
+      this._invocationManager,
+      this._element,
+      new IdMatcher(value),
+    ).execute();
   }
   async toHaveValue(value) {
-    return await new MatcherAssertionInteraction(this._invocationManager, this._element, new ValueMatcher(value)).execute();
+    return await new MatcherAssertionInteraction(
+      this._invocationManager,
+      this._element,
+      new ValueMatcher(value),
+    ).execute();
   }
 }
 
@@ -475,7 +584,11 @@ class WaitForElement extends WaitFor {
     return new WaitForInteraction(this._invocationManager, this._element, new ValueMatcher(value));
   }
   toNotHaveValue(value) {
-    return new WaitForInteraction(this._invocationManager, this._element, new NotValueMatcher(value));
+    return new WaitForInteraction(
+      this._invocationManager,
+      this._element,
+      new NotValueMatcher(value),
+    );
   }
 }
 
@@ -490,7 +603,7 @@ class WebExpect {
       type: (value) => new TypeMatcher(value),
       traits: (value) => new TraitsMatcher(value),
       value: (value) => new ValueMatcher(value),
-      text: (value) => new TextMatcher(value)
+      text: (value) => new TextMatcher(value),
     };
 
     this.element = this.element.bind(this);

@@ -1,6 +1,4 @@
-const invoke = require('../invoke');
-const GreyMatchers = require('../ios/earlgreyapi/GREYMatchers');
-const GreyMatchersDetox = require('../ios/earlgreyapi/GREYMatchers+Detox');
+const invoke = require('detox/src/invoke');
 
 class Matcher {
   withAncestor(matcher) {
@@ -8,7 +6,7 @@ class Matcher {
     if (_originalMatcherCall.method === 'selector' && matcher._call.method === 'selector') {
       this._call = {
         ..._originalMatcherCall,
-        args: [`${matcher._call.args[0]}//*${_originalMatcherCall.args[0]}`]
+        args: [`${matcher._call.args[0]}//*${_originalMatcherCall.args[0]}`],
       };
     } else {
       throw new Error('Complex withAncestor not supported');
@@ -20,7 +18,7 @@ class Matcher {
     if (_originalMatcherCall.method === 'selector' && matcher._call.method === 'selector') {
       this._call = {
         ..._originalMatcherCall,
-        args: [`${_originalMatcherCall.args[0]}[descendant::*${matcher._call.args[0]}]`]
+        args: [`${_originalMatcherCall.args[0]}[descendant::*${matcher._call.args[0]}]`],
       };
     } else {
       throw new Error('Complex withDescendent not supported');
@@ -34,51 +32,61 @@ class Matcher {
       this._call = {
         target: {
           type: 'matcher',
-          value: 'matcher'
+          value: 'matcher',
         },
         method: 'selector',
-        args: [`${matcher._call.args[0]}${_originalMatcherCall.args[0]}`]
+        args: [`${matcher._call.args[0]}${_originalMatcherCall.args[0]}`],
       };
     } else if (_originalMatcherCall.args[0].startsWith('/')) {
       this._call = {
         target: {
           type: 'matcher',
-          value: 'matcher'
+          value: 'matcher',
         },
         method: 'selector',
-        args: [`${_originalMatcherCall.args[0]}${matcher._call.args[0]}`]
+        args: [`${_originalMatcherCall.args[0]}${matcher._call.args[0]}`],
       };
     } else {
       this._call = {
         target: {
           type: 'matcher',
-          value: 'matcher'
+          value: 'matcher',
         },
         method: 'selector',
-        args: [`${_originalMatcherCall.args[0]}${matcher._call.args[0]}`]
+        args: [`${_originalMatcherCall.args[0]}${matcher._call.args[0]}`],
       };
     }
     return this;
   }
   not() {
-    const _originalMatcherCall = this._call;
-    this._call = invoke.callDirectly(GreyMatchersDetox.detoxMatcherForNot(_originalMatcherCall));
-    return this;
+    throw new Error('not yet implemented');
+    // const _originalMatcherCall = this._call;
+    // this._call = invoke.callDirectly(GreyMatchersDetox.detoxMatcherForNot(_originalMatcherCall));
+    // return this;
   }
   _avoidProblematicReactNativeElements() {
-    const _originalMatcherCall = this._call;
-    this._call = invoke.callDirectly(GreyMatchersDetox.detoxMatcherAvoidingProblematicReactNativeElements(_originalMatcherCall));
-    return this;
+    throw new Error('not yet implemented');
+    // const _originalMatcherCall = this._call;
+    // this._call = invoke.callDirectly(
+    //   GreyMatchersDetox.detoxMatcherAvoidingProblematicReactNativeElements(_originalMatcherCall),
+    // );
+    // return this;
   }
   _extendToDescendantScrollViews() {
-    const _originalMatcherCall = this._call;
-    this._call = invoke.callDirectly(GreyMatchersDetox.detoxMatcherForScrollChildOfMatcher(_originalMatcherCall));
-    return this;
+    throw new Error('not yet implemented');
+    // const _originalMatcherCall = this._call;
+    // this._call = invoke.callDirectly(
+    //   GreyMatchersDetox.detoxMatcherForScrollChildOfMatcher(_originalMatcherCall),
+    // );
+    // return this;
   }
   _extendPickerViewMatching() {
-    const _originalMatcherCall = this._call;
-    this._call = invoke.callDirectly(GreyMatchersDetox.detoxMatcherForPickerViewChildOfMatcher(_originalMatcherCall));
-    return this;
+    throw new Error('not yet implemented');
+    // const _originalMatcherCall = this._call;
+    // this._call = invoke.callDirectly(
+    //   GreyMatchersDetox.detoxMatcherForPickerViewChildOfMatcher(_originalMatcherCall),
+    // );
+    // return this;
   }
 }
 
@@ -88,10 +96,10 @@ class IndexMatcher extends Matcher {
     this._call = {
       target: {
         type: 'matcher',
-        value: 'matcher'
+        value: 'matcher',
       },
       method: 'index',
-      args: [value]
+      args: [value],
     };
   }
 }
@@ -103,10 +111,10 @@ class LabelMatcher extends Matcher {
     this._call = {
       target: {
         type: 'matcher',
-        value: 'matcher'
+        value: 'matcher',
       },
       method: 'selector',
-      args: [`[contains(., '${value}') or @value='${value}']`]
+      args: [`[contains(., '${value}') or @value='${value}']`],
     };
   }
 }
@@ -117,10 +125,10 @@ class IdMatcher extends Matcher {
     this._call = {
       target: {
         type: 'matcher',
-        value: 'matcher'
+        value: 'matcher',
       },
       method: 'selector',
-      args: [`[@data-testid="${value}"]`]
+      args: [`[@data-testid="${value}"]`],
     };
   }
 }
@@ -131,10 +139,10 @@ class TypeMatcher extends Matcher {
     this._call = {
       target: {
         type: 'matcher',
-        value: 'matcher'
+        value: 'matcher',
       },
       method: 'selector',
-      args: [`//${value}`]
+      args: [`//${value}`],
     };
   }
 }
@@ -146,10 +154,10 @@ class TraitsMatcher extends Matcher {
     this._call = {
       target: {
         type: 'matcher',
-        value: 'matcher'
+        value: 'matcher',
       },
       method: 'selector',
-      args: [`*`]
+      args: [`*`],
     };
   }
 }
@@ -160,10 +168,10 @@ class VisibleMatcher extends Matcher {
     this._call = {
       target: {
         type: 'matcher',
-        value: 'matcher'
+        value: 'matcher',
       },
       method: 'option',
-      args: [{ visible: true }]
+      args: [{ visible: true }],
     };
   }
 }
@@ -174,10 +182,10 @@ class NotVisibleMatcher extends Matcher {
     this._call = {
       target: {
         type: 'matcher',
-        value: 'matcher'
+        value: 'matcher',
       },
       method: 'option',
-      args: [{ visible: false }]
+      args: [{ visible: false }],
     };
   }
 }
@@ -188,10 +196,10 @@ class ExistsMatcher extends Matcher {
     this._call = {
       target: {
         type: 'matcher',
-        value: 'matcher'
+        value: 'matcher',
       },
       method: 'option',
-      args: [{ exists: true }]
+      args: [{ exists: true }],
     };
   }
 }
@@ -202,10 +210,10 @@ class NotExistsMatcher extends Matcher {
     this._call = {
       target: {
         type: 'matcher',
-        value: 'matcher'
+        value: 'matcher',
       },
       method: 'option',
-      args: [{ exists: false }]
+      args: [{ exists: false }],
     };
   }
 }
@@ -216,10 +224,10 @@ class TextMatcher extends Matcher {
     this._call = {
       target: {
         type: 'matcher',
-        value: 'matcher'
+        value: 'matcher',
       },
       method: 'selector',
-      args: [`[contains(., '${value}') or @value='${value}']`]
+      args: [`[contains(., '${value}') or @value='${value}']`],
     };
   }
 }
@@ -230,10 +238,10 @@ class ValueMatcher extends Matcher {
     this._call = {
       target: {
         type: 'matcher',
-        value: 'matcher'
+        value: 'matcher',
       },
       method: 'selector',
-      args: [`[@value="${value}"]`]
+      args: [`[@value="${value}"]`],
     };
   }
 }
@@ -244,10 +252,10 @@ class NotValueMatcher extends Matcher {
     this._call = {
       target: {
         type: 'matcher',
-        value: 'matcher'
+        value: 'matcher',
       },
       method: 'selector',
-      args: [`[not(@value="${value}")]`]
+      args: [`[not(@value="${value}")]`],
     };
   }
 }
@@ -265,5 +273,5 @@ module.exports = {
   TextMatcher,
   IndexMatcher,
   ValueMatcher,
-  NotValueMatcher
+  NotValueMatcher,
 };
