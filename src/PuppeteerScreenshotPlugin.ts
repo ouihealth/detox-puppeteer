@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 const temporaryPath = require('detox/src/artifacts/utils/temporaryPath');
 const FileArtifact = require('detox/src/artifacts/templates/artifact/FileArtifact');
 const ScreenshotArtifactPlugin = require('detox/src/artifacts/screenshot/ScreenshotArtifactPlugin');
