@@ -43,3 +43,11 @@ _\* Note: I'm looking for ways to remove this step but can't figure out how to e
 - Video artifacts working in headless puppeteer sessions
 - Multiple runners / executers in parallel
 - Document setup for running in CI
+
+## Credits
+
+Thanks to the following people / organizations
+
+- https://github.com/wix/ and the detox maintaners for detox
+- @muralikg for https://github.com/muralikg/puppetcam
+- The puppeteer team for https://github.com/puppeteer/puppeteer/

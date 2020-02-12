@@ -14,6 +14,8 @@ import PuppeteerScreenshotPlugin from './PuppeteerScreenshotPlugin';
 import PuppeteerRecordVideoPlugin from './PuppeteerRecordVideoPlugin';
 import LoginTestee from './LoginTesteeAction';
 
+const EXTENSION_DIRECTORY = path.join(__dirname, './puppetcam');
+
 // @ts-ignore
 function sleep(ms: number) {
   return new Promise((res) => {
@@ -732,7 +734,6 @@ class PuppeteerDriver extends DeviceDriverBase {
       launchArgs,
     });
 
-    const extensionDirectory = '/Users/awinograd/programming/puppetcam';
     browser =
       browser ||
       (await puppeteer.launch({
@@ -746,8 +747,8 @@ class PuppeteerDriver extends DeviceDriverBase {
           '--allow-http-screen-capture',
           '--allow-file-access-from-files',
           '--auto-select-desktop-capture-source=puppetcam',
-          '--load-extension=' + extensionDirectory,
-          '--disable-extensions-except=' + extensionDirectory,
+          '--load-extension=' + EXTENSION_DIRECTORY,
+          '--disable-extensions-except=' + EXTENSION_DIRECTORY,
         ],
       }));
     this._applyPermissions(deviceId, bundleId);
