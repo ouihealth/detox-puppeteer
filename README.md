@@ -5,13 +5,16 @@
 ## Getting started
 
 1. yarn add --dev detox-puppeteer
-1. In your jest `config.json`, add `node_modules/detox` `transformIgnorePatterns`*
+1. In your jest `config.json`, add `node_modules/detox` `transformIgnorePatterns`\*
 1. In `e2e/init.js`, register the driver with detox:
+
 ```
 import { addDriver } from 'detox';
 addDriver('web.puppeteer', PuppeteerDriver);
 ```
+
 4. In `package.json` add a new configuration for `detox-puppeteer`
+
 ```
 ...
   "detox": {
@@ -19,22 +22,24 @@ addDriver('web.puppeteer', PuppeteerDriver);
        "web.aviva": {
          "binaryPath": "/http://example.com/", // Note the leading and trailing slashes
          "type": "web.puppeteer",
-         "defaultViewport": { // optional
-           "width": 375,
-           "height": 712
+         "device": { // optional, all options with defaults shown here
+           "defaultViewport": {
+             "width": 375,
+             "height": 712
+           },
+           "headless": true,
+           "devtools": false,
          },
          "name": "puppeteer"
       },
    },
  ...
- ```
+```
 
-
-_* Note: I'm looking for ways to remove this step but can't figure out how to extend a native js class without the transpiling yet. PRs welcome!_
-
+_\* Note: I'm looking for ways to remove this step but can't figure out how to extend a native js class without the transpiling yet. PRs welcome!_
 
 ## Missing features / TODO
 
-* Video artifacts working in headless puppeteer sessions
-* Multiple runners / executers in parallel
-* Document setup for running in CI
+- Video artifacts working in headless puppeteer sessions
+- Multiple runners / executers in parallel
+- Document setup for running in CI
