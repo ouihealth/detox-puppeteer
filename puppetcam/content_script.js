@@ -6,16 +6,12 @@ window.onload = () => {
   port.onMessage.addListener((msg) => window.postMessage(msg, '*'));
   window.addEventListener('message', (event) => {
     if (!event.data) return;
-    // console.log(event.data);
     // Relay client messages
     if (event.source === window && event.data.type) {
       port.postMessage(event.data);
     }
     if (event.data.downloadComplete) {
       document.querySelector('html').classList.add('downloadComplete');
-    }
-    if (event.data.recordingStarted) {
-      document.querySelector('html').classList.add('recordingStarted');
     }
   });
 

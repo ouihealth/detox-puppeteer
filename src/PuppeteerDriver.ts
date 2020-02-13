@@ -41,6 +41,7 @@ let browser: puppeteer.Browser | null;
 let page: puppeteer.Page | null;
 let urlBlacklist: string[] = [];
 let pendingExport: string | null = null;
+let isRecording = false;
 class PuppeteerTestee {
   configuration: any;
   client: typeof Client;
@@ -637,12 +638,15 @@ class PuppeteerDriver extends DeviceDriverBase {
   }
 
   async recordVideo(deviceId) {
+    debug('recordVideo');
     await page!.evaluate((filename) => {
       window.postMessage({ type: 'REC_START' }, '*');
     });
+    isRecording = true;
   }
 
   async stopVideo(deviceId) {
+    debug('stopVideo', { pendingExport });
     if (pendingExport) {
       const value = pendingExport;
       pendingExport = null;
@@ -650,10 +654,6 @@ class PuppeteerDriver extends DeviceDriverBase {
     }
 
     const exportname = `puppet${Math.random()}.webm`;
-    const isRecording = await page?.evaluate(() => {
-      return document.querySelector('html.recordingStarted');
-    });
-
     if (isRecording) {
       await page!.evaluate((filename) => {
         window.postMessage({ type: 'SET_EXPORT_PATH', filename: filename }, '*');
@@ -661,6 +661,7 @@ class PuppeteerDriver extends DeviceDriverBase {
       }, exportname);
       await page!.waitForSelector('html.downloadComplete', { timeout: 5000 });
       pendingExport = path.join(os.homedir(), 'Downloads', exportname);
+      isRecording = false;
     }
 
     return pendingExport;

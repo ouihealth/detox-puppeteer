@@ -30,7 +30,6 @@ chrome.runtime.onConnect.addListener((port) => {
                 chunks.push(event.data);
               }
             };
-            port.postMessage({ recordingStarted: true });
 
             recorder.onstop = function() {
               var superBuffer = new Blob(chunks, {
