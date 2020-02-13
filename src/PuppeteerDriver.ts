@@ -654,7 +654,6 @@ class PuppeteerDriver extends DeviceDriverBase {
     // detecting the download
     // }
     // console.log("after DL");
-    // TODO use generic chrome downloads path
     return path.join(os.homedir(), 'Downloads', exportname);
   }
 
