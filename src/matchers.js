@@ -260,7 +260,7 @@ class NotValueMatcher extends Matcher {
   }
 }
 
-module.exports = {
+export {
   Matcher,
   LabelMatcher,
   IdMatcher,

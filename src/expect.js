@@ -1,5 +1,5 @@
 const invoke = require('detox/src/invoke');
-const matchers = require('./matchers');
+import * as matchers from './matchers';
 const Matcher = matchers.Matcher;
 const LabelMatcher = matchers.LabelMatcher;
 const IndexMatcher = matchers.IndexMatcher;
@@ -626,4 +626,4 @@ class WebExpect {
   }
 }
 
-module.exports = WebExpect;
+export default WebExpect;

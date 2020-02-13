@@ -8,13 +8,13 @@ const InvocationManager = require('detox/src/invoke').InvocationManager;
 const temporaryPath = require('detox/src/artifacts/utils/temporaryPath');
 const Client = require('detox/src/client/Client');
 
-import puppeteer from 'puppeteer';
+import * as puppeteer from 'puppeteer';
 import WebExpect from './expect';
 import PuppeteerScreenshotPlugin from './PuppeteerScreenshotPlugin';
 import PuppeteerRecordVideoPlugin from './PuppeteerRecordVideoPlugin';
 import LoginTestee from './LoginTesteeAction';
 
-const EXTENSION_DIRECTORY = path.join(__dirname, './puppetcam');
+const EXTENSION_DIRECTORY = path.join(__dirname, '../puppetcam');
 
 // @ts-ignore
 function sleep(ms: number) {

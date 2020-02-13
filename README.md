@@ -7,7 +7,6 @@
 WARNING: This plugin currently requires a fork of detox (`"detox": "npm:oui-detox"` in package.json) until https://github.com/wix/Detox/issues/1882 is resolved. This plugin is new and potentially unstable. Use at your own risk!
 
 1. yarn add --dev detox-puppeteer
-1. In your jest `config.json`, add `node_modules/detox` `transformIgnorePatterns`\*
 1. In `e2e/init.js`, register the driver with detox:
 
 ```
@@ -37,8 +36,6 @@ addDriver('web.puppeteer', PuppeteerDriver);
    },
  ...
 ```
-
-_\* Note: I'm looking for ways to remove this step but can't figure out how to extend a native js class without the transpiling yet. PRs welcome!_
 
 ## Missing features / TODO
 

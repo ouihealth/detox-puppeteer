@@ -10,6 +10,7 @@
     "importHelpers": true,
     "jsx": "preserve",
     "lib": ["dom", "esnext"],
+    "module": "commonjs",
     "noErrorTruncation": true,
     "noEmitHelpers": true,
     "noFallthroughCasesInSwitch": true,
@@ -21,7 +22,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "esnext"
+    "target": "es6"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
