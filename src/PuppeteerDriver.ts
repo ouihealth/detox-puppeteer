@@ -749,7 +749,7 @@ class PuppeteerDriver extends DeviceDriverBase {
     browser =
       browser ||
       (await puppeteer.launch({
-        devtools: this._getDeviceOption('devtools', true),
+        devtools: this._getDeviceOption('devtools', false),
         headless,
         defaultViewport,
         // ignoreDefaultArgs: ['--enable-automation'], // works, but shows "not your default browser toolbar"
