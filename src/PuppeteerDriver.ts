@@ -40,6 +40,7 @@ let enableSynchronization = true;
 let browser: puppeteer.Browser | null;
 let page: puppeteer.Page | null;
 let urlBlacklist: string[] = [];
+let pendingExport: string | null = null;
 class PuppeteerTestee {
   configuration: any;
   client: typeof Client;
@@ -642,20 +643,27 @@ class PuppeteerDriver extends DeviceDriverBase {
   }
 
   async stopVideo(deviceId) {
+    if (pendingExport) {
+      const value = pendingExport;
+      pendingExport = null;
+      return value;
+    }
+
     const exportname = `puppet${Math.random()}.webm`;
-    await page!.evaluate((filename) => {
-      window.postMessage({ type: 'SET_EXPORT_PATH', filename: filename }, '*');
-      window.postMessage({ type: 'REC_STOP' }, '*');
-    }, exportname);
-    // try{
-    // console.log("waitForSelector");
-    await page!.waitForSelector('html.downloadComplete', { timeout: 5000 });
-    // } catch (e) {
-    // noop. This waitFor could fail if the page navigates away before
-    // detecting the download
-    // }
-    // console.log("after DL");
-    return path.join(os.homedir(), 'Downloads', exportname);
+    const isRecording = await page!.evaluate(() => {
+      return document.querySelector('html.recordingStarted');
+    });
+
+    if (isRecording) {
+      await page!.evaluate((filename) => {
+        window.postMessage({ type: 'SET_EXPORT_PATH', filename: filename }, '*');
+        window.postMessage({ type: 'REC_STOP' }, '*');
+      }, exportname);
+      await page!.waitForSelector('html.downloadComplete', { timeout: 5000 });
+      pendingExport = path.join(os.homedir(), 'Downloads', exportname);
+    }
+
+    return pendingExport;
   }
 
   async cleanup(deviceId, bundleId) {
@@ -794,6 +802,7 @@ class PuppeteerDriver extends DeviceDriverBase {
 
   async terminate(deviceId, bundleId) {
     debug('terminate', { deviceId, bundleId });
+    await this.stopVideo(deviceId);
     await this.emitter.emit('beforeTerminateApp', { deviceId, bundleId });
     if (browser) {
       await browser.close();
