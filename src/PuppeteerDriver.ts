@@ -735,12 +735,14 @@ class PuppeteerDriver extends DeviceDriverBase {
       launchArgs,
     });
 
+    const defaultViewport = launchArgs.viewport || this._getDefaultViewport();
+
     browser =
       browser ||
       (await puppeteer.launch({
         devtools: this._getDeviceOption('devtools', true),
         headless: this._getDeviceOption('headless', true),
-        defaultViewport: launchArgs.viewport || this._getDefaultViewport(),
+        defaultViewport,
         // ignoreDefaultArgs: ['--enable-automation'], // works, but shows "not your default browser toolbar"
         args: [
           '--no-sandbox',
@@ -750,6 +752,7 @@ class PuppeteerDriver extends DeviceDriverBase {
           '--auto-select-desktop-capture-source=puppetcam',
           '--load-extension=' + EXTENSION_DIRECTORY,
           '--disable-extensions-except=' + EXTENSION_DIRECTORY,
+          `--window-size=${defaultViewport.width},${defaultViewport.height}`,
         ],
       }));
     this._applyPermissions(deviceId, bundleId);
