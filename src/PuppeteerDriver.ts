@@ -18,6 +18,7 @@ import LoginTestee from './LoginTesteeAction';
 
 var xvfb = new Xvfb({ silent: true });
 const EXTENSION_DIRECTORY = path.join(__dirname, '../puppetcam');
+const TOOLBAR_SIZE = 50; // size of automated chrome + recording screen toolbars
 
 // @ts-ignore
 function sleep(ms: number) {
@@ -761,7 +762,7 @@ class PuppeteerDriver extends DeviceDriverBase {
           '--auto-select-desktop-capture-source=puppetcam',
           '--load-extension=' + EXTENSION_DIRECTORY,
           '--disable-extensions-except=' + EXTENSION_DIRECTORY,
-          `--window-size=${defaultViewport.width},${defaultViewport.height}`,
+          `--window-size=${defaultViewport.width},${defaultViewport.height + TOOLBAR_SIZE * 2}`,
         ],
       }));
     this._applyPermissions(deviceId, bundleId);
