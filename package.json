@@ -8,7 +8,8 @@
     "@babel/runtime": "^7.8.4",
     "lodash": "^4.17.15",
     "puppeteer": "^2.1.0",
-    "tslib": "^1.10.0"
+    "tslib": "^1.10.0",
+    "xvfb": "^0.3.0"
   },
   "devDependencies": {
     "@types/detox": "^14.5.2",

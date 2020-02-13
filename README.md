@@ -28,7 +28,7 @@ addDriver('web.puppeteer', PuppeteerDriver);
              "width": 375,
              "height": 712
            },
-           "headless": true,
+           "headless": false,
            "devtools": false,
          },
          "name": "puppeteer"
@@ -39,7 +39,6 @@ addDriver('web.puppeteer', PuppeteerDriver);
 
 ## Missing features / TODO
 
-- Video artifacts working in headless puppeteer sessions
 - Multiple runners / executers in parallel
 - Document setup for running in CI
 

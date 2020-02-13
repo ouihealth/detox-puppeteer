@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const Xvfb = require('xvfb');
 
 const log = require('detox/src/utils/logger').child({ __filename });
 const DeviceDriverBase = require('detox/src/devices/drivers/DeviceDriverBase');
@@ -15,6 +16,7 @@ import PuppeteerScreenshotPlugin from './PuppeteerScreenshotPlugin';
 import PuppeteerRecordVideoPlugin from './PuppeteerRecordVideoPlugin';
 import LoginTestee from './LoginTesteeAction';
 
+var xvfb = new Xvfb({ silent: true });
 const EXTENSION_DIRECTORY = path.join(__dirname, '../puppetcam');
 
 // @ts-ignore
@@ -664,6 +666,10 @@ class PuppeteerDriver extends DeviceDriverBase {
       await browser.close();
       browser = null;
     }
+
+    // stopSync is safe to call even if startSync() wasn't
+    xvfb.stopSync();
+
     // await this.deviceRegistry.disposeDevice(deviceId);
     await super.cleanup(deviceId, bundleId);
   }
@@ -736,12 +742,16 @@ class PuppeteerDriver extends DeviceDriverBase {
     });
 
     const defaultViewport = launchArgs.viewport || this._getDefaultViewport();
+    const headless = this._getDeviceOption('headless', false);
+    if (!headless && process.env.CI) {
+      xvfb.startSync();
+    }
 
     browser =
       browser ||
       (await puppeteer.launch({
         devtools: this._getDeviceOption('devtools', true),
-        headless: this._getDeviceOption('headless', true),
+        headless,
         defaultViewport,
         // ignoreDefaultArgs: ['--enable-automation'], // works, but shows "not your default browser toolbar"
         args: [
