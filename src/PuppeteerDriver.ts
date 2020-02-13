@@ -650,7 +650,7 @@ class PuppeteerDriver extends DeviceDriverBase {
     }
 
     const exportname = `puppet${Math.random()}.webm`;
-    const isRecording = await page!.evaluate(() => {
+    const isRecording = await page?.evaluate(() => {
       return document.querySelector('html.recordingStarted');
     });
 
