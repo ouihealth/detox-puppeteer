@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 
 const log = require('detox/src/utils/logger').child({ __filename });
 const DeviceDriverBase = require('detox/src/devices/drivers/DeviceDriverBase');
@@ -652,7 +653,7 @@ class PuppeteerDriver extends DeviceDriverBase {
     // }
     // console.log("after DL");
     // TODO use generic chrome downloads path
-    return path.join('/Users/awinograd/Downloads', exportname);
+    return path.join(os.homdir(), 'Downloads', exportname);
   }
 
   async cleanup(deviceId, bundleId) {
