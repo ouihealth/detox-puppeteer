@@ -679,52 +679,21 @@ class PuppeteerDriver extends DeviceDriverBase {
     // stopSync is safe to call even if startSync() wasn't
     xvfb.stopSync();
 
-    // await this.deviceRegistry.disposeDevice(deviceId);
     await super.cleanup(deviceId, bundleId);
   }
 
   async acquireFreeDevice(deviceQuery) {
     debug('PuppeteerDriver.acquireFreeDevice', deviceQuery);
     return '';
-    // const udid = await this.deviceRegistry.allocateDevice(async () => {
-    //   return await this._findOrCreateDevice(deviceQuery);
-    // });
-
-    // const deviceComment = this._commentDevice(deviceQuery);
-    // if (!udid) {
-    //   throw new Error(`Failed to find device matching ${deviceComment}`);
-    // }
-
-    // await this._boot(udid);
-    // this._name = `${udid} ${deviceComment}`;
-    // return udid;
   }
 
   async getBundleIdFromBinary(appPath) {
     debug('PuppeteerDriver.getBundleIdFromBinary', appPath);
     return '';
-    // try {
-    //   const result = await exec(`/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "${path.join(appPath, 'Info.plist')}"`);
-    //   const bundleId = _.trim(result.stdout);
-    //   if (_.isEmpty(bundleId)) {
-    //     throw new Error();
-    //   }
-    //   return bundleId;
-    // } catch (ex) {
-    //   throw new Error(`field CFBundleIdentifier not found inside Info.plist of app binary at ${appPath}`);
-    // }
   }
-
-  // async _boot(deviceId) {
-  //   debug("PuppeteerDriver.boot", { deviceId, bundleId });
-  //   const deviceLaunchArgs = argparse.getArgValue("deviceLaunchArgs");
-  //   const coldBoot = await this.applesimutils.boot(deviceId, deviceLaunchArgs);
-  //   await this.emitter.emit("bootDevice", { coldBoot, deviceId });
-  // }
 
   async installApp(deviceId, binaryPath) {
     debug('installApp', { deviceId, binaryPath });
-    // await this.applesimutils.install(deviceId, binaryPath);
   }
 
   async uninstallApp(deviceId, bundleId) {

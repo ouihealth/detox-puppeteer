@@ -39,7 +39,6 @@ addDriver('web.puppeteer', PuppeteerDriver);
 
 ## Missing features / TODO
 
-- Multiple runners / executers in parallel
 - Document setup for running in CI
 
 ## Credits
