@@ -28,13 +28,12 @@ function sleep(ms: number) {
   });
 }
 
+let rando = Math.random();
 function debug(label: string, ...args: any[]) {
-  return;
-  log.info(`PuppeteerDriver.${label}`, ...args);
+  log.debug(`${rando} PuppeteerDriver.${label}`, ...args);
 }
 function debugTestee(label: string, ...args: any[]) {
-  return;
-  log.info(`PuppeteerTestee.${label}`, ...args);
+  log.debug(`${rando} PuppeteerTestee.${label}`, ...args);
 }
 
 let enableSynchronization = true;
@@ -370,6 +369,7 @@ class PuppeteerTestee {
 
   async synchronizeNetwork() {
     return new Promise((resolve) => {
+      debugTestee('inflightRequests', this.inflightRequests);
       if (Object.keys(this.inflightRequests).length === 0) {
         resolve();
         return;
@@ -385,7 +385,7 @@ class PuppeteerTestee {
   }
 
   removeInflightRequest(request) {
-    // debugTestee('offRequest', request.uid);
+    debugTestee('offRequest', request.uid);
     delete this.inflightRequests[request.uid];
     if (Object.keys(this.inflightRequests).length === 0) {
       if (this.inflightRequestsSettledCallback) this.inflightRequestsSettledCallback();
@@ -395,11 +395,11 @@ class PuppeteerTestee {
   onRequest(request) {
     request.uid = Math.random();
     const url = request.url();
-    // debugTestee('onRequest', request.uid, url, request.postData());
     const isIgnored = urlBlacklist.some((candidate) => {
       return url.match(new RegExp(candidate));
     });
     if (!isIgnored) {
+      debugTestee('onRequest', request.uid, url, request.postData());
       this.inflightRequests[request.uid] = true;
     }
   }
@@ -571,7 +571,7 @@ class PuppeteerTestee {
           }
         }
       } catch (error) {
-        console.error(error);
+        log.error(error);
         await sendResponse({
           type: 'error',
           messageId: messageId,
@@ -870,7 +870,7 @@ class PuppeteerDriver extends DeviceDriverBase {
     this.deviceConfig = deviceConfig;
     debug('validateDeviceConfig', deviceConfig);
     if (!deviceConfig.binaryPath) {
-      console.error(
+      log.error(
         'PuppeteerDriver requires binaryPath to be set in detox config in the format `/${URL}`',
       );
       // @ts-ignore
