@@ -19,6 +19,7 @@ import LoginTestee from './LoginTesteeAction';
 var xvfb = new Xvfb({ silent: true });
 const EXTENSION_DIRECTORY = path.join(__dirname, '../puppetcam');
 const TOOLBAR_SIZE = 50; // size of automated chrome + recording screen toolbars
+const NETWORKIDLE = 'networkidle0';
 
 // @ts-ignore
 function sleep(ms: number) {
@@ -524,7 +525,7 @@ class PuppeteerTestee {
             await this.synchronizeNetwork();
           }
           if (action.params && action.params.url) {
-            await page!.goto(action.params.url, { waitUntil: 'networkidle2' });
+            await page!.goto(action.params.url, { waitUntil: NETWORKIDLE });
             // await setupDetoxTimeouts();
           }
           await sendResponse({
@@ -753,7 +754,7 @@ class PuppeteerDriver extends DeviceDriverBase {
     const url = launchArgs.detoxURLOverride || this.deviceConfig.binaryPath.slice(1);
     if (url) {
       page = (await browser.pages())[0];
-      await page!.goto(url, { waitUntil: 'networkidle2' });
+      await page!.goto(url, { waitUntil: NETWORKIDLE });
     }
     // const pid = await this.applesimutils.launch(deviceId, bundleId, launchArgs, languageAndLocale);
     const pid = 'PID';
@@ -904,7 +905,7 @@ class PuppeteerDriver extends DeviceDriverBase {
     const url = this.deviceConfig.binaryPath.slice(1);
     if (url) {
       page = (await browser!.pages())[0];
-      await page!.goto(url, { waitUntil: 'networkidle2' });
+      await page!.goto(url, { waitUntil: NETWORKIDLE });
     }
   }
 }
