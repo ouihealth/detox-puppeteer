@@ -518,6 +518,11 @@ class PuppeteerTestee {
         if (action.type === 'loginSuccess') {
           return;
         } else if (action.type === 'deliverPayload') {
+          // Need to sychronize network here so that we dont have any network requests
+          // lost in the page navigation
+          if (enableSynchronization) {
+            await this.synchronizeNetwork();
+          }
           if (action.params && action.params.url) {
             await page!.goto(action.params.url, { waitUntil: 'networkidle2' });
             // await setupDetoxTimeouts();
