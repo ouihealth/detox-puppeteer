@@ -57,6 +57,7 @@ class PuppeteerTestee {
     this.inflightRequestsSettledCallback = null;
     this.onRequest = this.onRequest.bind(this);
     this.removeInflightRequest = this.removeInflightRequest.bind(this);
+    this.clearInflightRequests = this.clearInflightRequests.bind(this);
   }
 
   async selectElementWithMatcher(...args: any[]) {
@@ -345,15 +346,26 @@ class PuppeteerTestee {
   }
 
   async setupNetworkSynchronization() {
+    browser!.on('disconnected', this.clearInflightRequests);
+    page!.on('close', this.clearInflightRequests);
     page!.on('request', this.onRequest);
     page!.on('requestfinished', this.removeInflightRequest);
     page!.on('requestfailed', this.removeInflightRequest);
   }
 
   async teardownNetworkSynchronization() {
+    browser!.removeListener('disconnected', this.clearInflightRequests);
+    page!.removeListener('close', this.clearInflightRequests);
     page!.removeListener('request', this.onRequest);
     page!.removeListener('requestfinished', this.removeInflightRequest);
     page!.removeListener('requestfailed', this.removeInflightRequest);
+  }
+
+  async clearInflightRequests() {
+    debugTestee('clearInflightRequests', this.inflightRequests);
+    Object.keys(this.inflightRequests).forEach((key) => {
+      this.removeInflightRequest({ uid: key });
+    });
   }
 
   async synchronizeNetwork() {
