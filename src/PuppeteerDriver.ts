@@ -922,4 +922,4 @@ class PuppeteerDriver extends DeviceDriverBase {
   }
 }
 
-export default PuppeteerDriver;
+export = PuppeteerDriver;
