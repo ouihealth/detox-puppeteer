@@ -730,6 +730,7 @@ class PuppeteerDriver extends DeviceDriverBase {
       bundleId,
       launchArgs,
       languageAndLocale,
+      config: this.deviceConfig,
     });
     await this.emitter.emit('beforeLaunchApp', {
       bundleId,
@@ -763,7 +764,7 @@ class PuppeteerDriver extends DeviceDriverBase {
       }));
     this._applyPermissions(deviceId, bundleId);
 
-    const url = launchArgs.detoxURLOverride || this.deviceConfig.binaryPath.slice(1);
+    const url = launchArgs.detoxURLOverride || this.deviceConfig.binaryPath;
     if (url) {
       page = (await browser.pages())[0];
       await page!.goto(url, { waitUntil: NETWORKIDLE });
@@ -870,9 +871,7 @@ class PuppeteerDriver extends DeviceDriverBase {
     this.deviceConfig = deviceConfig;
     debug('validateDeviceConfig', deviceConfig);
     if (!deviceConfig.binaryPath) {
-      log.error(
-        'PuppeteerDriver requires binaryPath to be set in detox config in the format `/${URL}`',
-      );
+      log.error('PuppeteerDriver requires binaryPath to be set in detox config as your base URL');
       // @ts-ignore
       configuration.throwOnEmptyBinaryPath();
     }
@@ -914,7 +913,7 @@ class PuppeteerDriver extends DeviceDriverBase {
   }
 
   async reloadReactNative() {
-    const url = this.deviceConfig.binaryPath.slice(1);
+    const url = this.deviceConfig.binaryPath;
     if (url) {
       page = (await browser!.pages())[0];
       await page!.goto(url, { waitUntil: NETWORKIDLE });
