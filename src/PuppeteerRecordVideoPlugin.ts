@@ -1,4 +1,4 @@
-const fs = require('fs-extra');
+const fs = require('fs');
 const log = require('detox/src/utils/logger').child({ __filename });
 const VideoArtifactPlugin = require('detox/src/artifacts/video/VideoArtifactPlugin');
 const Artifact = require('detox/src/artifacts/templates/artifact/Artifact');
@@ -27,7 +27,7 @@ class PuppeteerRecordVideoPlugin extends VideoArtifactPlugin {
         await FileArtifact.moveTemporaryFile(log, temporaryFilePath, artifactPath);
       },
       discard: async () => {
-        await fs.remove(temporaryFilePath);
+        await fs.unlinkSync(temporaryFilePath);
       },
     });
   }
