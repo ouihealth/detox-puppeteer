@@ -679,6 +679,16 @@ class PuppeteerDriver extends DeviceDriverBase {
       }, exportname);
       await page!.waitForSelector('html.downloadComplete', { timeout: 5000 });
       pendingExport = path.join(os.homedir(), 'Downloads', exportname);
+
+      // html.downloadComplete get's set when the download starts, but we want to make sure
+      // it's saved to disk before continuing
+      for (let i = 0; i < 10; i++) {
+        if (fs.existsSync(pendingExport)) {
+          break;
+        }
+        await sleep(500);
+      }
+
       isRecording = false;
     }
 
