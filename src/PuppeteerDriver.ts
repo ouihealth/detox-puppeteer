@@ -929,6 +929,10 @@ class PuppeteerDriver extends DeviceDriverBase {
       await page!.goto(url, { waitUntil: NETWORKIDLE });
     }
   }
+
+  getBrowser() {
+    return browser;
+  }
 }
 
 export = PuppeteerDriver;
