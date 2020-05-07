@@ -4,7 +4,7 @@
 
 ## Getting started
 
-WARNING: This plugin currently requires a fork of detox (`"detox": "npm:oui-detox@15.1.7-beta.1"` in package.json) until https://github.com/wix/Detox/issues/1882 is resolved. This plugin is new and potentially unstable. Use at your own risk!
+This plugin is requires detox >= 16.3.0.
 
 1. yarn add --dev detox-puppeteer
 1. In `package.json` add a new configuration for `detox-puppeteer`
@@ -13,16 +13,16 @@ WARNING: This plugin currently requires a fork of detox (`"detox": "npm:oui-deto
 ...
   "detox": {
      "configurations": {
-       "web.aviva": {
+       "web.example": {
          "binaryPath": "http://example.com/", // Note trailing slash
          "type": "detox-puppeteer",
-         "device": { // optional, all options with defaults shown here
+         "device": {
            "defaultViewport": {
              "width": 375,
              "height": 712
            },
-           "headless": false,
-           "devtools": false,
+           "headless": false, // optional
+           "devtools": false, // optional
          },
          "name": "puppeteer"
       },
