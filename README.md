@@ -30,9 +30,14 @@ This plugin is requires detox >= 16.3.0.
  ...
 ```
 
-## Missing features / TODO
+### Running on CI
 
-- Document setup for running in CI
+In your CI service of choice, run a container based off of `Dockerfile.example` provided here.
+
+If you install your node modules in a build step that doesn't use this container, you can set
+`PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true` when running `npm install` or `yarn install` as the
+container image comes with chromium already installed. The puppeteer npm package will download
+chromium by default unless the ENV variable is set.
 
 ## Credits
 
