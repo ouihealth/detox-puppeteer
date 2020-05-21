@@ -1,6 +1,6 @@
 {
   "name": "detox-puppeteer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "build/PuppeteerDriver.js",
   "private": false,
   "scripts": {},

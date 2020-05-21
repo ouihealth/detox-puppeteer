@@ -42,11 +42,11 @@ chromium by default unless the ENV variable is set.
 ### Workarounds
 
 When screen recording is enabled, chromium will display a toolbar that pushes the page content
-out of view. To compensate you can add the following css to your app:
+out of the viewport. To compensate you can add the following css to your app:
 
 ```css
 body.detox-puppeteer-recording > #root {
-  height: calc(100vh - 52px);
+  height: calc(100vh - 50px);
 }
 ```
 
