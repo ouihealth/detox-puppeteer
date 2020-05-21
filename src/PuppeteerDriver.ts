@@ -677,10 +677,10 @@ class PuppeteerDriver extends DeviceDriverBase {
         window.postMessage({ type: 'SET_EXPORT_PATH', filename: filename }, '*');
         window.postMessage({ type: 'REC_STOP' }, '*');
       }, exportname);
-      await page!.waitForSelector('html.downloadComplete', { timeout: 5000 });
+      await page!.waitForSelector('html.detox-puppeteer-downloadComplete', { timeout: 5000 });
       pendingExport = path.join(os.homedir(), 'Downloads', exportname);
 
-      // html.downloadComplete get's set when the download starts, but we want to make sure
+      // html.detox-puppeteer-downloadComplete get's set when the download starts, but we want to make sure
       // it's saved to disk before continuing
       for (let i = 0; i < 10; i++) {
         if (fs.existsSync(pendingExport)) {

@@ -8,10 +8,14 @@ window.onload = () => {
     if (!event.data) return;
     // Relay client messages
     if (event.source === window && event.data.type) {
+      if (event.data.type === 'REC_START') {
+        document.querySelector('body').classList.add('detox-puppeteer-recording');
+      }
       port.postMessage(event.data);
     }
     if (event.data.downloadComplete) {
-      document.querySelector('html').classList.add('downloadComplete');
+      document.querySelector('body').classList.remove('detox-puppeteer-recording');
+      document.querySelector('html').classList.add('detox-puppeteer-downloadComplete');
     }
   });
 

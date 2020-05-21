@@ -39,6 +39,17 @@ If you install your node modules in a build step that doesn't use this container
 container image comes with chromium already installed. The puppeteer npm package will download
 chromium by default unless the ENV variable is set.
 
+### Workarounds
+
+When screen recording is enabled, chromium will display a toolbar that pushes the page content
+out of view. To compensate you can add the following css to your app:
+
+```css
+body.detox-puppeteer-recording > #root {
+  height: calc(100vh - 52px);
+}
+```
+
 ## Credits
 
 Thanks to the following people / organizations
