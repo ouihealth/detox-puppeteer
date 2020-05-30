@@ -6,6 +6,9 @@ let filename = null;
 chrome.runtime.onConnect.addListener((port) => {
   port.onMessage.addListener((msg) => {
     switch (msg.type) {
+      case 'CHECK_IS_RECORDING':
+        port.postMessage({ isRecording: !!recorder });
+        break;
       case 'SET_EXPORT_PATH':
         filename = msg.filename;
         break;

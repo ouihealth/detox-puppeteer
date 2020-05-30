@@ -4,6 +4,8 @@ window.onload = () => {
   // Setup message passing
   const port = chrome.runtime.connect(chrome.runtime.id);
   port.onMessage.addListener((msg) => window.postMessage(msg, '*'));
+  port.postMessage({ type: 'CHECK_IS_RECORDING' });
+
   window.addEventListener('message', (event) => {
     if (!event.data) return;
     // Relay client messages
@@ -16,6 +18,9 @@ window.onload = () => {
     if (event.data.downloadComplete) {
       document.querySelector('body').classList.remove('detox-puppeteer-recording');
       document.querySelector('html').classList.add('detox-puppeteer-downloadComplete');
+    }
+    if (event.data.isRecording) {
+      document.querySelector('body').classList.add('detox-puppeteer-recording');
     }
   });
 
