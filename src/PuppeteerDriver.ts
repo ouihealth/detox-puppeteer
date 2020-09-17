@@ -6,7 +6,6 @@ const Xvfb = require('xvfb');
 
 const log = require('detox/src/utils/logger').child({ __filename });
 const DeviceDriverBase = require('detox/src/devices/drivers/DeviceDriverBase');
-const InvocationManager = require('detox/src/invoke').InvocationManager;
 const temporaryPath = require('detox/src/artifacts/utils/temporaryPath');
 const Client = require('detox/src/client/Client');
 
@@ -673,7 +672,6 @@ class PuppeteerDriver extends DeviceDriverBase {
     super(config);
     debug('constructor', config);
 
-    this.matchers = new WebExpect(new InvocationManager(this.client));
     this.testee = new PuppeteerTestee(config);
   }
 
@@ -1018,4 +1016,7 @@ class PuppeteerDriver extends DeviceDriverBase {
   }
 }
 
-export = PuppeteerDriver;
+export = {
+  DriverClass: PuppeteerDriver,
+  ExpectClass: WebExpect,
+};

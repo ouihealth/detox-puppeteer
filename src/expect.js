@@ -485,7 +485,7 @@ class Element {
 }
 
 class Expect {
-  constructor(invocationManager) {
+  constructor({ invocationManager }) {
     this._invocationManager = invocationManager;
   }
 }

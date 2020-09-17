@@ -1,6 +1,6 @@
 {
   "name": "detox-puppeteer",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "main": "build/PuppeteerDriver.js",
   "private": false,
   "scripts": {},
@@ -16,7 +16,7 @@
     "@types/lodash": "^4.14.149",
     "@types/node": "^13.7.0",
     "@types/puppeteer": "^2.0.0",
-    "detox": "^16.3.0",
+    "detox": "^17.0.0",
     "prettier": "^1.19.0",
     "typescript": "^3.7.0"
   }
