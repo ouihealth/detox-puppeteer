@@ -485,7 +485,7 @@ class Element {
 }
 
 class Expect {
-  constructor({ invocationManager }) {
+  constructor(invocationManager) {
     this._invocationManager = invocationManager;
   }
 }
@@ -593,7 +593,7 @@ class WaitForElement extends WaitFor {
 }
 
 class WebExpect {
-  constructor(invocationManager) {
+  constructor({ invocationManager }) {
     this._invocationManager = invocationManager;
 
     this.by = {
