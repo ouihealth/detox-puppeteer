@@ -867,9 +867,7 @@ class PuppeteerDriver extends DeviceDriverBase {
       await page!.goto(url, { waitUntil: NETWORKIDLE });
     }
 
-    if (launchArgs.permissions) {
-      await this.setPermissions(deviceId, bundleId, launchArgs.permissions);
-    }
+    await this._applyPermissions(deviceId, bundleId);
 
     // const pid = await this.applesimutils.launch(deviceId, bundleId, launchArgs, languageAndLocale);
     const pid = 'PID';
@@ -947,7 +945,6 @@ class PuppeteerDriver extends DeviceDriverBase {
       .map(([key]) => PERMISSIONS_LOOKUP[key])
       .filter((equivalentPermission) => !!equivalentPermission);
     this.requestedPermissions = requestedPermissions;
-    await this._applyPermissions(deviceId, bundleId);
   }
 
   async _applyPermissions(deviceId: string, bundleId: string) {
