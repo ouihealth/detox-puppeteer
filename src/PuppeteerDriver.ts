@@ -835,10 +835,6 @@ class PuppeteerDriver extends DeviceDriverBase {
       );
     }
 
-    if (launchArgs.permissions) {
-      await this.setPermissions(deviceId, bundleId, launchArgs.permissions);
-    }
-
     disableTouchIndicators = launchArgs.disableTouchIndicators;
     const defaultViewport = launchArgs.viewport || this._getDefaultViewport();
     const headless = this._getDeviceOption('headless', false);
