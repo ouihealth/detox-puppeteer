@@ -4,7 +4,7 @@
 
 ## Getting started
 
-This plugin requires detox >= 17.0.0.
+This plugin requires detox >= 17.3.0.
 
 1. yarn add --dev detox-puppeteer
 1. In `package.json` add a new configuration for `detox-puppeteer`
