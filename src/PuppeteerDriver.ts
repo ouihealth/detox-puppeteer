@@ -835,6 +835,10 @@ class PuppeteerDriver extends DeviceDriverBase {
       );
     }
 
+    if (launchArgs.permissions) {
+      await this.setPermissions(deviceId, bundleId, launchArgs.permissions);
+    }
+
     disableTouchIndicators = launchArgs.disableTouchIndicators;
     const defaultViewport = launchArgs.viewport || this._getDefaultViewport();
     const headless = this._getDeviceOption('headless', false);
@@ -860,13 +864,17 @@ class PuppeteerDriver extends DeviceDriverBase {
           `--window-size=${defaultViewport.width},${defaultViewport.height + TOOLBAR_SIZE}`,
         ],
       }));
-    this._applyPermissions(deviceId, bundleId);
 
     const url = launchArgs.detoxURLOverride || this.deviceConfig.binaryPath;
     if (url) {
       page = (await browser.pages())[0];
       await page!.goto(url, { waitUntil: NETWORKIDLE });
     }
+
+    if (launchArgs.permissions) {
+      await this.setPermissions(deviceId, bundleId, launchArgs.permissions);
+    }
+
     // const pid = await this.applesimutils.launch(deviceId, bundleId, launchArgs, languageAndLocale);
     const pid = 'PID';
     await this.emitter.emit('launchApp', {
@@ -943,6 +951,7 @@ class PuppeteerDriver extends DeviceDriverBase {
       .map(([key]) => PERMISSIONS_LOOKUP[key])
       .filter((equivalentPermission) => !!equivalentPermission);
     this.requestedPermissions = requestedPermissions;
+    await this._applyPermissions(deviceId, bundleId);
   }
 
   async _applyPermissions(deviceId: string, bundleId: string) {
@@ -950,7 +959,9 @@ class PuppeteerDriver extends DeviceDriverBase {
       const context = browser.defaultBrowserContext();
       await context.clearPermissionOverrides();
       const url = await page!.url();
-      await context.overridePermissions(new URL(url).origin, this.requestedPermissions);
+      if (url) {
+        await context.overridePermissions(new URL(url).origin, this.requestedPermissions);
+      }
     }
   }
 
