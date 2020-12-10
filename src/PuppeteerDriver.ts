@@ -828,6 +828,13 @@ class PuppeteerDriver extends DeviceDriverBase {
       launchArgs,
     });
 
+    if (launchArgs.detoxURLBlacklistRegex) {
+      const blacklistRegex = launchArgs.detoxURLBlacklistRegex;
+      await this.setURLBlacklist(
+        JSON.parse('[' + blacklistRegex.substr(2, blacklistRegex.length - 4) + ']'),
+      );
+    }
+
     disableTouchIndicators = launchArgs.disableTouchIndicators;
     const defaultViewport = launchArgs.viewport || this._getDefaultViewport();
     const headless = this._getDeviceOption('headless', false);
