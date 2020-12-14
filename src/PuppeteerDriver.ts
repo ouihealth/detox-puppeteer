@@ -668,6 +668,7 @@ class PuppeteerTestee {
         });
         await browser!.close();
         browser = null;
+        page = null;
       }
     });
 
@@ -795,6 +796,7 @@ class PuppeteerDriver extends DeviceDriverBase {
     if (browser) {
       await browser.close();
       browser = null;
+      page = null;
     }
 
     // stopSync is safe to call even if startSync() wasn't
@@ -823,6 +825,7 @@ class PuppeteerDriver extends DeviceDriverBase {
     if (browser) {
       await browser.close();
       browser = null;
+      page = null;
     }
   }
 
@@ -907,11 +910,17 @@ class PuppeteerDriver extends DeviceDriverBase {
 
   async terminate(deviceId, bundleId) {
     debug('terminate', { deviceId, bundleId });
+    // If we're in the middle of recording, signal to the next launch that we should start
+    // in a recording state
+    if (isRecording) {
+      recordVideo = true;
+    }
     await this.stopVideo(deviceId);
     await this.emitter.emit('beforeTerminateApp', { deviceId, bundleId });
     if (browser) {
       await browser.close();
       browser = null;
+      page = null;
     }
     // await this.applesimutils.terminate(deviceId, bundleId);
     await this.emitter.emit('terminateApp', { deviceId, bundleId });
