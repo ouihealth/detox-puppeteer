@@ -42,6 +42,7 @@ let urlBlacklist: string[] = [];
 let pendingExport: string | null = null;
 let isRecording = false;
 let disableTouchIndicators = false;
+let recordVideo = false;
 
 // https://gist.github.com/aslushnikov/94108a4094532c7752135c42e12a00eb
 async function setupTouchIndicators() {
@@ -743,7 +744,12 @@ class PuppeteerDriver extends DeviceDriverBase {
   }
 
   async recordVideo(deviceId) {
-    debug('recordVideo');
+    debug('recordVideo', { page: !!page });
+    if (!page) {
+      recordVideo = true;
+      return;
+    }
+    recordVideo = false;
     await page!.evaluate((filename) => {
       window.postMessage({ type: 'REC_START' }, '*');
     });
@@ -872,6 +878,9 @@ class PuppeteerDriver extends DeviceDriverBase {
     if (url) {
       page = (await browser.pages())[0];
       await page!.goto(url, { waitUntil: NETWORKIDLE });
+      if (recordVideo) {
+        await this.recordVideo(deviceId);
+      }
     }
 
     await this._applyPermissions(deviceId, bundleId);
