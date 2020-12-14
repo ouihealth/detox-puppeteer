@@ -204,21 +204,28 @@ class PuppeteerTestee {
 
   async performAction(element: any, action: any) {
     debugTestee('performAction', action);
+    async function clickIfUnfocused() {
+      const isFocused = await element.evaluate((el) => document.activeElement === el);
+      if (!isFocused) {
+        await element.click();
+      }
+    }
+
     if (action.method === 'replaceText') {
-      await element.click();
+      await clickIfUnfocused();
       await page!.keyboard.type(action.args[0]);
       return true;
     } else if (action.method === 'typeText') {
-      await element.click();
+      await clickIfUnfocused();
       await page!.keyboard.type(action.args[0]);
       return true;
     } else if (action.method === 'keyboardPress') {
-      await element.click();
+      await clickIfUnfocused();
       await page!.keyboard.press(action.args[0]);
       return true;
     } else if (action.method === 'clearText') {
       const elementValue = await element.evaluate((el) => el.value);
-      await element.click();
+      await clickIfUnfocused();
       for (let i = 0; i < elementValue.length; i++) {
         await page!.keyboard.press('Backspace');
       }
