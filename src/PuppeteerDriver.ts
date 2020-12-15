@@ -430,22 +430,19 @@ class PuppeteerTestee {
     return params;
   }
 
-  async setupNetworkSynchronization() {
+  setupNetworkSynchronization() {
     // teardown before adding listeners to ensure we don't double subscribe to events
-    await this.teardownNetworkSynchronization();
-    browser!.on('disconnected', this.clearInflightRequests);
-    page!.on('close', this.clearInflightRequests);
-    page!.on('request', this.onRequest);
-    page!.on('requestfinished', this.removeInflightRequest);
-    page!.on('requestfailed', this.removeInflightRequest);
-  }
-
-  async teardownNetworkSynchronization() {
     browser!.removeListener('disconnected', this.clearInflightRequests);
     page!.removeListener('close', this.clearInflightRequests);
     page!.removeListener('request', this.onRequest);
     page!.removeListener('requestfinished', this.removeInflightRequest);
     page!.removeListener('requestfailed', this.removeInflightRequest);
+
+    browser!.on('disconnected', this.clearInflightRequests);
+    page!.on('close', this.clearInflightRequests);
+    page!.on('request', this.onRequest);
+    page!.on('requestfinished', this.removeInflightRequest);
+    page!.on('requestfailed', this.removeInflightRequest);
   }
 
   async clearInflightRequests() {
@@ -564,7 +561,7 @@ class PuppeteerTestee {
 
       // Always re-setup in case we created a new page object since
       // the last action
-      await this.setupNetworkSynchronization();
+      this.setupNetworkSynchronization();
 
       const sendResponse = async (response, options: { skipSynchronization?: boolean } = {}) => {
         debugTestee('sendResponse', response);
