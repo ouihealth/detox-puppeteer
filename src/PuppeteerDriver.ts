@@ -483,16 +483,11 @@ class PuppeteerTestee {
   onRequest(request) {
     request.uid = Math.random();
     const url = request.url();
-    const method = request.method();
-    const isIgnored =
-      method === 'HEAD' ||
-      url.includes('favicon.ico') ||
-      url.startsWith('data:') ||
-      urlBlacklist.some((candidate) => {
-        return url.match(new RegExp(candidate));
-      });
+    const isIgnored = urlBlacklist.some((candidate) => {
+      return url.match(new RegExp(candidate));
+    });
     if (!isIgnored) {
-      debugTestee('onRequest', request.uid, url, method, request.postData());
+      debugTestee('onRequest', request.uid, url, request.method, request.postData());
       this.inflightRequests[request.uid] = true;
     }
   }
