@@ -431,6 +431,8 @@ class PuppeteerTestee {
   }
 
   async setupNetworkSynchronization() {
+    // teardown before adding listeners to ensure we don't double subscribe to events
+    await this.teardownNetworkSynchronization();
     browser!.on('disconnected', this.clearInflightRequests);
     page!.on('close', this.clearInflightRequests);
     page!.on('request', this.onRequest);
@@ -560,9 +562,8 @@ class PuppeteerTestee {
         // console.warn(e);
       }
 
-      // Always teardown + setup in case we created a new page object since
+      // Always re-setup in case we created a new page object since
       // the last action
-      await this.teardownNetworkSynchronization();
       await this.setupNetworkSynchronization();
 
       const sendResponse = async (response, options: { skipSynchronization?: boolean } = {}) => {
