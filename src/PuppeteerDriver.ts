@@ -431,8 +431,6 @@ class PuppeteerTestee {
   }
 
   async setupNetworkSynchronization() {
-    this.inflightRequests = {};
-    this.inflightRequestsSettledCallback = null;
     browser!.on('disconnected', this.clearInflightRequests);
     page!.on('close', this.clearInflightRequests);
     page!.on('request', this.onRequest);
@@ -487,7 +485,7 @@ class PuppeteerTestee {
       return url.match(new RegExp(candidate));
     });
     if (!isIgnored) {
-      debugTestee('onRequest', request.uid, url, request.method, request.postData());
+      debugTestee('onRequest', request.uid, url, request.postData());
       this.inflightRequests[request.uid] = true;
     }
   }
