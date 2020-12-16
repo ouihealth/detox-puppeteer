@@ -15,7 +15,10 @@ import PuppeteerScreenshotPlugin from './PuppeteerScreenshotPlugin';
 import PuppeteerRecordVideoPlugin from './PuppeteerRecordVideoPlugin';
 import LoginTestee from './LoginTesteeAction';
 
-var xvfb = new Xvfb({ silent: true });
+const displayNum = process.env.JEST_WORKER_ID
+  ? 100 + Number.parseInt(process.env.JEST_WORKER_ID, 10)
+  : undefined;
+const xvfb = new Xvfb({ silent: true, displayNum });
 const EXTENSION_DIRECTORY = path.join(__dirname, '../puppetcam');
 const TOOLBAR_SIZE = 124; // size of automated chrome + recording screen toolbars + url bar
 const NETWORKIDLE = 'networkidle0';
