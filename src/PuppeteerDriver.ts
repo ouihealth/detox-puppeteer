@@ -156,10 +156,10 @@ class PuppeteerTestee {
       // This is a dummy waitFor because sometimes the JS thread is (apparently)
       // blocked and doesn't execute our element finding function a single time
       // before being able to run again.
-      await page!.waitFor(() => {
+      await page!.waitForFunction(() => {
         return true;
       });
-      result = await page!.waitFor(
+      result = await page!.waitForFunction(
         ({ selectorArg, indexArg, visibleArg }) => {
           const xpath = selectorArg.args[0];
           const isContainMatcher = xpath.includes('contains(');
@@ -180,10 +180,34 @@ class PuppeteerTestee {
             }
           }
 
+          // https://github.com/puppeteer/puppeteer/blob/49f25e2412fbe3ac43ebc6913a582718066486cc/experimental/puppeteer-firefox/lib/JSHandle.js#L190-L204
+          function isIntersectingViewport(el) {
+            return new Promise<number>((resolve) => {
+              const observer = new IntersectionObserver((entries) => {
+                resolve(entries[0].intersectionRatio);
+                observer.disconnect();
+              });
+              observer.observe(el);
+              // Firefox doesn't call IntersectionObserver callback unless
+              // there are rafs.
+              requestAnimationFrame(() => {});
+            }).then((visibleRatio) => visibleRatio > 0);
+          }
+
           // do a reverse search to match iOS indexes
           const element = elements[indexArg ? elements.length - 1 - indexArg.args[0] : 0];
-          if (visibleArg && visibleArg.args[0].visible === false && !element) {
-            return true;
+          if (visibleArg) {
+            if (visibleArg.args[0].visible === false) {
+              if (element) {
+                return !isIntersectingViewport(element);
+              } else {
+                return true;
+              }
+            } else if (visibleArg.args[0].visible === true) {
+              if (element) {
+                return isIntersectingViewport(element) ? element : false;
+              }
+            }
           }
 
           return element;
@@ -191,10 +215,6 @@ class PuppeteerTestee {
         { timeout: timeoutArg ? timeoutArg.args[0].timeout : 200 },
         { visibleArg, selectorArg, indexArg },
       );
-      if (visibleArg && visibleArg.args[0].visible === false) {
-        const isVisible = await (result as puppeteer.ElementHandle).isIntersectingViewport();
-        if (isVisible) throw new Error(`Element should not be visible: ${selectorArg.args[0]}`);
-      }
     } catch (e) {
       if (visibleArg) {
         const shouldBeVisible = visibleArg.args[0].visible === true;
@@ -602,7 +622,7 @@ class PuppeteerTestee {
           .then(() => animationsSettledPromise)
           .then(() => {
             if (!performSynchronization) return;
-            return page!.waitFor(() => {
+            return page!.waitForFunction(() => {
               // @ts-ignore
               return Object.keys(window._detoxTimeouts || {}).length === 0;
             });
