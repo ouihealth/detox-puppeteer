@@ -50,6 +50,17 @@ body.detox-puppeteer-recording > #root {
 }
 ```
 
+Sometimes the detox API is insufficient for interacting with the full range of puppeteer
+functionality. detox-puppeteer exposes puppeteer's browser object so your tests can opt-in to
+custom puppeteer functionality.
+
+```ts
+export async function getPuppeteerPage() {
+  const browser: Browser = (detox.device as any).deviceDriver.getBrowser();
+  return (await browser.pages())[0];
+}
+```
+
 ## Credits
 
 Thanks to the following people / organizations
