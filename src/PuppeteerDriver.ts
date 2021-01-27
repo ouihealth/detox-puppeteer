@@ -237,6 +237,7 @@ class PuppeteerTestee {
 
     if (action.method === 'replaceText') {
       await clickIfUnfocused();
+      await element.evaluate((el) => (el.value = ''));
       await page!.keyboard.type(action.args[0]);
       return true;
     } else if (action.method === 'typeText') {
