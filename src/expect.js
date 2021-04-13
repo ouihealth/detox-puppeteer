@@ -196,7 +196,7 @@ class ScrollEdgeAction extends Action {
 }
 
 class SwipeAction extends Action {
-  constructor(direction, speed, percentage) {
+  constructor(direction, speed, percentage, normalizedStartingPointX, normalizedStartingPointY) {
     super();
     if (typeof direction !== 'string')
       throw new Error(`SwipeAction ctor 1st argument must be a string, got ${typeof direction}`);
@@ -209,7 +209,7 @@ class SwipeAction extends Action {
         value: 'action',
       },
       method: 'swipe',
-      args: [direction, speed, percentage],
+      args: [direction, speed, percentage, normalizedStartingPointX, normalizedStartingPointY],
     };
   }
 }
@@ -459,11 +459,23 @@ class Element {
       new ScrollEdgeAction(edge),
     ).execute();
   }
-  async swipe(direction, speed = 'fast', percentage = 0) {
+  async swipe(
+    direction,
+    speed = 'fast',
+    percentage = NaN,
+    normalizedStartingPointX = NaN,
+    normalizedStartingPointY = NaN,
+  ) {
     return await new ActionInteraction(
       this._invocationManager,
       this,
-      new SwipeAction(direction, speed, percentage),
+      new SwipeAction(
+        direction,
+        speed,
+        percentage,
+        normalizedStartingPointX,
+        normalizedStartingPointY,
+      ),
     ).execute();
   }
   async setColumnToValue(column, value) {

@@ -151,7 +151,7 @@ class PuppeteerTestee {
       (a) => a.method === 'option' && typeof a.args[0].visible === 'boolean',
     );
     const indexArg = args.find((a) => a.method === 'index');
-    let result: puppeteer.JSHandle<unknown> | null = null;
+    let result: puppeteer.JSHandle | null = null;
     try {
       // This is a dummy waitFor because sometimes the JS thread is (apparently)
       // blocked and doesn't execute our element finding function a single time
@@ -296,6 +296,7 @@ class PuppeteerTestee {
 
             setTimeout(() => {
               el.dispatchEvent(end);
+              // @ts-ignore
               resolve();
             }, duration);
           });
@@ -356,33 +357,47 @@ class PuppeteerTestee {
       return true;
     } else if (action.method === 'swipe') {
       const direction = action.args[0];
-      // TODO handle all options
       // const speed = action.args[1];
-      // const percentage = action.args[2];
+      const percentageOfScreenToSwipe = action.args[2] ?? 0.5;
+      const normalizedStartingPointX = action.args[3] ?? 0.5;
+      const normalizedStartingPointY = action.args[4] ?? 0.5;
+
+      const { width, height } = page!.viewport()!;
       let top = 0;
       let left = 0;
+
       if (direction === 'up') {
-        top = 10000;
+        top = -height * percentageOfScreenToSwipe;
       } else if (direction === 'down') {
-        top = -10000;
+        top = height * percentageOfScreenToSwipe;
       } else if (direction === 'left') {
-        left = 10000;
+        left = -width * percentageOfScreenToSwipe;
       } else if (direction === 'right') {
-        left = -10000;
+        left = width * percentageOfScreenToSwipe;
       }
 
-      await element.evaluate(
-        (el, scrollOptions) => {
-          el.scrollBy(scrollOptions);
-        },
-        { top, left },
-      );
+      const scrollable = await element.evaluate((el) => {
+        return el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth;
+      });
+      if (scrollable) {
+        await element.hover();
+        await page!.mouse.wheel({
+          deltaX: left,
+          deltaY: top,
+        });
+      } else {
+        let result = await element.boundingBox();
+        await element.hover();
+        await page!.mouse.down();
+        await page!.mouse.move(
+          result.x + result.width * normalizedStartingPointX + left,
+          result.y + result.height * normalizedStartingPointY + top,
+          { steps: 100 },
+        );
+        await page!.mouse.up();
+      }
       return true;
     }
-
-    // await element.evaluate((el, action) => {
-    //   console.log(el, action);
-    // });
 
     throw new Error('action not performed: ' + JSON.stringify(action));
   }
@@ -477,7 +492,7 @@ class PuppeteerTestee {
   }
 
   async synchronizeNetwork() {
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
       debugTestee('inflightRequests', this.inflightRequests);
       if (Object.keys(this.inflightRequests).length === 0) {
         resolve();
@@ -595,7 +610,7 @@ class PuppeteerTestee {
           : Promise.resolve();
 
         const animationsSettledPromise = performSynchronization
-          ? new Promise((resolve) => {
+          ? new Promise<void>((resolve) => {
               const interval = setInterval(() => {
                 Object.entries(animationTimeById).forEach(async ([id, duration]) => {
                   let result: { currentTime: number | null } = {
@@ -742,7 +757,7 @@ class PuppeteerDriver extends DeviceDriverBase {
   }
 
   async setOrientation(deviceId, orientation) {
-    const viewport = await page!.viewport();
+    const viewport = page!.viewport()!;
     const isLandscape = orientation === 'landscape';
     const largerDimension = Math.max(viewport.width, viewport.height);
     const smallerDimension = Math.min(viewport.width, viewport.height);
