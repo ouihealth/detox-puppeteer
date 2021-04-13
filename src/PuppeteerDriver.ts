@@ -380,11 +380,14 @@ class PuppeteerTestee {
         return el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth;
       });
       if (scrollable) {
-        await element.hover();
-        await page!.mouse.wheel({
-          deltaX: left,
-          deltaY: top,
-        });
+        await element.evaluate(
+          (el, scrollOptions) => {
+            el.scrollBy(scrollOptions);
+          },
+          // we want to scroll in the opposite direction of the swipe. If we swipe down, we expect
+          // the scroll down, decreasing scrollTop
+          { top: top * -1, left: left * -1 },
+        );
       } else {
         let result = await element.boundingBox();
         await element.hover();
