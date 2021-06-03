@@ -465,6 +465,8 @@ class PuppeteerTestee {
     const args = await Promise.all(promises);
     if (params.target === 'this' || params.target.type === 'this') {
       const result = await this[params.method](...args);
+      // a small delay between each invocation allows for more stable tests
+      await sleep(30);
       debugTestee('result?', params.method, !!result);
       return result;
     }
