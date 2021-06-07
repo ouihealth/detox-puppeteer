@@ -226,12 +226,24 @@ class PuppeteerTestee {
     return result;
   }
 
-  async performAction(element: any, action: any) {
+  async performAction(element: puppeteer.ElementHandle | undefined, action: any) {
     debugTestee('performAction', action);
+
+    if (!element) {
+      debugTestee('performAction DOM', await page?.evaluate(() => document.body.innerHTML), {
+        availableTestIds: await page?.evaluate(() =>
+          Array.prototype.slice
+            .call(document.querySelectorAll('[data-testid]'))
+            .map((n) => n.attributes['data-testid'].nodeValue),
+        ),
+      });
+      throw new Error('performing action on undefined element');
+    }
+
     async function clickIfUnfocused() {
-      const isFocused = await element.evaluate((el) => document.activeElement === el);
+      const isFocused = await element?.evaluate((el) => document.activeElement === el);
       if (!isFocused) {
-        await element.click();
+        await element?.click();
       }
     }
 
@@ -259,7 +271,7 @@ class PuppeteerTestee {
       await element.tap();
       return true;
     } else if (action.method === 'tapAtPoint') {
-      const box = await element.boundingBox();
+      const box = (await element.boundingBox())!;
       const x = box.x + action.args[0].x;
       const y = box.y + action.args[0].y;
       await page!.touchscreen.tap(x, y);
@@ -389,7 +401,7 @@ class PuppeteerTestee {
           { top: top * -1, left: left * -1 },
         );
       } else {
-        let result = await element.boundingBox();
+        let result = (await element.boundingBox())!;
         await element.hover();
         await page!.mouse.down();
         await page!.mouse.move(
