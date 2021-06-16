@@ -179,6 +179,10 @@ class PuppeteerTestee {
               elements.push(maybeElement);
             }
           }
+          // Sometimes we use contains in a compound matcher and skip a valid result
+          // To recover, we take the last match if we did have a match but nothing was added to elements
+          // @ts-ignore
+          if (isContainMatcher && elements.length === 0 && lastMatch) elements.push(lastMatch);
 
           // https://github.com/puppeteer/puppeteer/blob/49f25e2412fbe3ac43ebc6913a582718066486cc/experimental/puppeteer-firefox/lib/JSHandle.js#L190-L204
           function isIntersectingViewport(el) {
