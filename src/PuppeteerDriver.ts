@@ -152,6 +152,14 @@ class PuppeteerTestee {
     );
     const indexArg = args.find((a) => a.method === 'index');
     let result: puppeteer.JSHandle | null = null;
+
+    let bodyHTML = await page?.evaluate(() => document.body.innerHTML);
+    let availableTestIds = await page?.evaluate(() =>
+      Array.prototype.slice
+        .call(document.querySelectorAll('[data-testid]'))
+        .map((n) => n.attributes['data-testid'].nodeValue),
+    );
+
     try {
       // This is a dummy waitFor because sometimes the JS thread is (apparently)
       // blocked and doesn't execute our element finding function a single time
@@ -219,6 +227,24 @@ class PuppeteerTestee {
         { timeout: timeoutArg ? timeoutArg.args[0].timeout : 200 },
         { visibleArg, selectorArg, indexArg },
       );
+
+      if (!result) {
+        debugTestee('selectElementWithMatcher no result (pre-check)', {
+          bodyHTML: bodyHTML,
+          availableTestIds: availableTestIds,
+        });
+        debugTestee(
+          'selectElementWithMatcher no result (post-check)',
+          await page?.evaluate(() => document.body.innerHTML),
+          {
+            availableTestIds: await page?.evaluate(() =>
+              Array.prototype.slice
+                .call(document.querySelectorAll('[data-testid]'))
+                .map((n) => n.attributes['data-testid'].nodeValue),
+            ),
+          },
+        );
+      }
     } catch (e) {
       if (visibleArg) {
         const shouldBeVisible = visibleArg.args[0].visible === true;
