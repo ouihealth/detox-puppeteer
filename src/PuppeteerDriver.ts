@@ -862,7 +862,7 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
   }
 
   getExternalId() {
-    return '';
+    return this.deviceId;
   }
 
   getDeviceName() {
