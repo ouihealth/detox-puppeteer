@@ -10,14 +10,14 @@ class PuppeteerScreenshotPlugin extends ScreenshotArtifactPlugin {
   }
 
   createTestArtifact() {
-    const { driver, context } = this;
+    const { driver } = this;
 
     return new FileArtifact({
       name: 'PuppeteerScreenshot',
 
       async start() {
         this.temporaryPath = temporaryPath.for.png();
-        await driver.takeScreenshot(context.deviceId, this.temporaryPath);
+        await driver.takeScreenshot(this.temporaryPath);
       },
     });
   }
