@@ -129,11 +129,12 @@ class PuppeteerTestee {
   inflightRequests: { [key: string]: boolean };
   inflightRequestsSettledCallback: (() => void) | null;
   sessionId: string;
-  isDetox17OrBefore: boolean = false;
+  isDetox17OrBefore: boolean;
 
   constructor(config) {
     // console.log('PuppeteerTestee.constructor', config);
     const isDetox17OrBefore = !!config.client.configuration;
+    this.isDetox17OrBefore = isDetox17OrBefore;
     if (isDetox17OrBefore) {
       this.sessionId = config.client.configuration.sessionId;
       this.client = new Client(config.client.configuration);
@@ -787,7 +788,9 @@ class PuppeteerTestee {
       this.client.ws.ws.on('message', (str) => onMessage(JSON.parse(str)));
     }
 
-    await this.client.sendAction(new LoginTestee(this.sessionId, 'app'));
+    await this.client.sendAction(
+      new LoginTestee(this.sessionId, this.isDetox17OrBefore ? 'testee' : 'app'),
+    );
   }
 }
 
