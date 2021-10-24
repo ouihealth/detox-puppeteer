@@ -125,15 +125,23 @@ async function setupTouchIndicators() {
 }
 
 class PuppeteerTestee {
-  configuration: any;
   client: typeof Client;
   inflightRequests: { [key: string]: boolean };
   inflightRequestsSettledCallback: (() => void) | null;
+  sessionId: string;
+  isDetox17OrBefore: boolean = false;
 
   constructor(config) {
-    debugTestee('PuppeteerTestee.constructor', config);
-    this.configuration = config.client.configuration;
-    this.client = new Client(this.configuration);
+    // console.log('PuppeteerTestee.constructor', config);
+    const isDetox17OrBefore = !!config.client.configuration;
+    if (isDetox17OrBefore) {
+      this.sessionId = config.client.configuration.sessionId;
+      this.client = new Client(config.client.configuration);
+    } else {
+      this.sessionId = config.client._sessionId;
+      this.client = new Client({ sessionId: this.sessionId, server: config.client._serverUrl });
+      this.client.ws = this.client._asyncWebSocket;
+    }
     this.inflightRequests = {};
     this.inflightRequestsSettledCallback = null;
     this.onRequest = this.onRequest.bind(this);
@@ -601,7 +609,8 @@ class PuppeteerTestee {
     /* end animation synchronization */
 
     await this.client.ws.open();
-    this.client.ws.ws.on('message', async (str) => {
+
+    const onMessage = async (action) => {
       if (!disableTouchIndicators) {
         await setupTouchIndicators();
       }
@@ -695,7 +704,6 @@ class PuppeteerTestee {
 
       let messageId;
       try {
-        const action = JSON.parse(str);
         messageId = action.messageId;
         debugTestee('PuppeteerTestee.message', JSON.stringify(action, null, 2));
         if (!action.type) {
@@ -703,6 +711,19 @@ class PuppeteerTestee {
         }
         if (action.type === 'loginSuccess') {
           return;
+        } else if (action.type === 'cleanup') {
+          if (browser) {
+            await browser.close();
+            browser = null;
+            page = null;
+          }
+          await sendResponse(
+            {
+              type: 'cleanupDone',
+              messageId: action.messageId,
+            },
+            { skipSynchronization: true },
+          );
         } else if (action.type === 'deliverPayload') {
           // Need to sychronize network here so that we dont have any network requests
           // lost in the page navigation
@@ -738,7 +759,7 @@ class PuppeteerTestee {
               JSON.stringify({
                 type: 'testFailed',
                 messageId,
-                params: { details: str + '\n' + error.message },
+                params: { details: JSON.stringify(action) + '\n' + error.message },
               }),
             );
           }
@@ -754,9 +775,19 @@ class PuppeteerTestee {
         browser = null;
         page = null;
       }
-    });
+    };
 
-    await this.client.sendAction(new LoginTestee(this.configuration.sessionId));
+    if (!this.isDetox17OrBefore) {
+      if (!this.client.ws.ws) {
+        this.client.ws.ws = this.client.ws._ws;
+      }
+      this.client.ws.setEventCallback('invoke', onMessage);
+      this.client.ws.setEventCallback('cleanup', onMessage);
+    } else {
+      this.client.ws.ws.on('message', (str) => onMessage(JSON.parse(str)));
+    }
+
+    await this.client.sendAction(new LoginTestee(this.sessionId, 'app'));
   }
 }
 

@@ -2,9 +2,9 @@ export default class LoginTestee {
   type: 'login';
   params: any;
   messageId;
-  constructor(sessionId: string) {
+  constructor(sessionId: string, role: 'testee' | 'app') {
     this.type = 'login';
-    this.params = { sessionId, role: 'testee' };
+    this.params = { sessionId, role };
     this.messageId;
   }
   async handle(response) {
