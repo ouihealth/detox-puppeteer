@@ -923,14 +923,14 @@ class PuppeteerDriver extends DeviceDriverBase {
     await super.cleanup(deviceId, bundleId);
   }
 
-  async acquireFreeDevice(deviceQuery) {
-    debug('PuppeteerDriver.acquireFreeDevice', deviceQuery);
+  async acquireFreeDevice(deviceQuery, deviceConfig) {
+    debug('PuppeteerDriver.acquireFreeDevice', deviceQuery, deviceConfig);
     return '';
   }
 
   async getBundleIdFromBinary(appPath) {
     debug('PuppeteerDriver.getBundleIdFromBinary', appPath);
-    return '';
+    return appPath;
   }
 
   async installApp(deviceId, binaryPath) {
@@ -995,7 +995,10 @@ class PuppeteerDriver extends DeviceDriverBase {
         ],
       }));
 
-    const url = launchArgs.detoxURLOverride || this.deviceConfig.binaryPath;
+    if (bundleId && !this.binaryPath) {
+      this.binaryPath = bundleId;
+    }
+    const url = launchArgs.detoxURLOverride || this.binaryPath;
     if (url) {
       page = (await browser.pages())[0];
       await page!.goto(url, { waitUntil: NETWORKIDLE });
@@ -1019,7 +1022,7 @@ class PuppeteerDriver extends DeviceDriverBase {
   }
 
   _getDeviceOption<T>(key: string, defaultValue: T): T {
-    return this.deviceConfig.device?.[key] ?? defaultValue;
+    return this.deviceConfig.device?.[key] ?? this.deviceConfig?.[key] ?? defaultValue;
   }
 
   _getDefaultViewport() {
@@ -1113,12 +1116,10 @@ class PuppeteerDriver extends DeviceDriverBase {
   }
 
   validateDeviceConfig(deviceConfig) {
-    this.deviceConfig = deviceConfig;
     debug('validateDeviceConfig', deviceConfig);
-    if (!deviceConfig.binaryPath) {
-      log.error('PuppeteerDriver requires binaryPath to be set in detox config as your base URL');
-      // @ts-ignore
-      configuration.throwOnEmptyBinaryPath();
+    this.deviceConfig = deviceConfig;
+    if (this.deviceConfig.binaryPath) {
+      this.binaryPath = this.deviceConfig.binaryPath;
     }
   }
 
@@ -1158,7 +1159,7 @@ class PuppeteerDriver extends DeviceDriverBase {
   }
 
   async reloadReactNative() {
-    const url = this.deviceConfig.binaryPath;
+    const url = this.binaryPath;
     if (url) {
       page = (await browser!.pages())[0];
       await page!.goto(url, { waitUntil: NETWORKIDLE });

@@ -9,6 +9,38 @@ This plugin requires detox >= 17.3.0.
 1. yarn add --dev detox-puppeteer
 1. In `package.json` add a new configuration for `detox-puppeteer`
 
+#### New Detox configuration format
+
+```
+...
+  "detox": {
+    "devices": {
+      "puppeteer-mobile": {
+        "type": "detox-puppeteer",
+        "defaultViewport": {
+          "width": 375,
+          "height": 712
+        }
+      }
+    },
+    "apps": {
+      "localapp": {
+        "type": "chrome",
+        "binaryPath": "http://localhost:8889/"
+      }
+    },
+    "configurations": {
+      "web.example": {
+        "device": "puppeteer-mobile",
+        "app": "localapp"
+      },
+   },
+ ...
+```
+
+
+#### Old Detox configuration format
+
 ```
 ...
   "detox": {
