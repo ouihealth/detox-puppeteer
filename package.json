@@ -1,6 +1,6 @@
 {
   "name": "detox-puppeteer",
-  "version": "3.1.1",
+  "version": "3.2.0",
   "main": "build/PuppeteerDriver.js",
   "private": false,
   "scripts": {
@@ -33,7 +33,41 @@
         "launchApp": false
       }
     },
+    "devices": {
+      "puppeteer": {
+        "type": "./build/PuppeteerDriver.js",
+        "defaultViewport": {
+          "width": 375,
+          "height": 712
+        }
+      }
+    },
+    "apps": {
+      "simple": {
+        "type": "chrome",
+        "binaryPath": "http://localhost:8889/"
+      }
+    },
+    "session": {},
     "configurations": {
+      "simple": {
+        "device": "puppeteer",
+        "app": "simple"
+      },
+      "android.emu.release": {
+        "device": "emulator",
+        "app": "android.release"
+      },
+      "android.att.release": {
+        "device": "android.attached",
+        "app": "android.release"
+      },
+      "android.genymotion.release": {
+        "device": "android.genycloud",
+        "app": "android.release"
+      }
+    },
+    "configurations_old": {
       "simple": {
         "binaryPath": "http://localhost:8889/",
         "type": "./build/PuppeteerDriver.js",
