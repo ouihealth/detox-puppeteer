@@ -288,7 +288,7 @@ class PuppeteerTestee {
 
     if (action.method === 'replaceText') {
       await clickIfUnfocused();
-      await element.evaluate((el) => (el.value = ''));
+      await element.evaluate((el) => ((el as any).value = ''));
       await page!.keyboard.type(action.args[0]);
       return true;
     } else if (action.method === 'typeText') {
@@ -300,7 +300,7 @@ class PuppeteerTestee {
       await page!.keyboard.press(action.args[0]);
       return true;
     } else if (action.method === 'clearText') {
-      const elementValue = await element.evaluate((el) => el.value);
+      const elementValue = await element.evaluate((el) => (el as any).value);
       await clickIfUnfocused();
       for (let i = 0; i < elementValue.length; i++) {
         await page!.keyboard.press('Backspace');
