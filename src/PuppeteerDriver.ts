@@ -5,7 +5,7 @@ const os = require('os');
 const Xvfb = require('xvfb');
 
 const log = require('detox/src/utils/logger').child({ __filename });
-const DeviceDriverBase = require('detox/src/devices/drivers/DeviceDriverBase');
+const DeviceDriverBase = require('detox/src/devices/runtime/drivers/DeviceDriverBase');
 const temporaryPath = require('detox/src/artifacts/utils/temporaryPath');
 const Client = require('detox/src/client/Client');
 
@@ -829,9 +829,11 @@ class PuppeteerAllocCookie {
 
 class PuppeteerDeviceAllocation {
   private readonly testee: PuppeteerTestee;
+  private readonly emitter: any;
 
   constructor(deps) {
     this.testee = new PuppeteerTestee(deps);
+    this.emitter = deps.eventEmitter;
   }
 
   async allocate(deviceConfig) {
@@ -853,7 +855,7 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
   private readonly deviceId: any;
   private readonly testee: PuppeteerTestee;
 
-  constructor(cookie: PuppeteerAllocCookie, deps) {
+  constructor(deps: any, cookie: PuppeteerAllocCookie) {
     super(deps);
     debug('constructor');
 
