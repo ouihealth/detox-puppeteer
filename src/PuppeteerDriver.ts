@@ -129,21 +129,13 @@ class PuppeteerTestee {
   inflightRequests: { [key: string]: boolean };
   inflightRequestsSettledCallback: (() => void) | null;
   sessionId: string;
-  isDetox17OrBefore: boolean;
 
   constructor(deps) {
     // console.log('PuppeteerTestee.constructor', config);
     const { client } = deps;
-    const isDetox17OrBefore = !!client.configuration;
-    this.isDetox17OrBefore = isDetox17OrBefore;
-    if (isDetox17OrBefore) {
-      this.sessionId = client.configuration.sessionId;
-      this.client = new Client(client.configuration);
-    } else {
-      this.sessionId = client._sessionId;
-      this.client = new Client({ sessionId: this.sessionId, server: client._serverUrl });
-      this.client.ws = this.client._asyncWebSocket;
-    }
+    this.sessionId = client._sessionId;
+    this.client = new Client({ sessionId: this.sessionId, server: client._serverUrl });
+    this.client.ws = this.client._asyncWebSocket;
     this.inflightRequests = {};
     this.inflightRequestsSettledCallback = null;
     this.onRequest = this.onRequest.bind(this);
@@ -779,19 +771,13 @@ class PuppeteerTestee {
       }
     };
 
-    if (!this.isDetox17OrBefore) {
-      if (!this.client.ws.ws) {
-        this.client.ws.ws = this.client.ws._ws;
-      }
-      this.client.ws.setEventCallback('invoke', onMessage);
-      this.client.ws.setEventCallback('cleanup', onMessage);
-    } else {
-      this.client.ws.ws.on('message', (str) => onMessage(JSON.parse(str)));
+    if (!this.client.ws.ws) {
+      this.client.ws.ws = this.client.ws._ws;
     }
+    this.client.ws.setEventCallback('invoke', onMessage);
+    this.client.ws.setEventCallback('cleanup', onMessage);
 
-    await this.client.sendAction(
-      new LoginTestee(this.sessionId, this.isDetox17OrBefore ? 'testee' : 'app'),
-    );
+    await this.client.sendAction(new LoginTestee(this.sessionId, 'app'));
   }
 }
 
