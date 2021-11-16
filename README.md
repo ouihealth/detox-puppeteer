@@ -8,10 +8,8 @@
 
 > For Detox v18 and v17, use detox-puppeteer `v3.x.x`.
 
-
-
 1. Run `yarn add --dev detox-puppeteer`
-1. In `package.json` add a new configuration for `detox-puppeteer`
+1. [add a new detox configuration](https://github.com/wix/Detox/blob/master/docs/APIRef.Configuration.md) for `detox-puppeteer`
 
 #### New Detox configuration format
 
