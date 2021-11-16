@@ -1,12 +1,16 @@
 ## Description
 
-`detox-puppeteer` is a custom driver for [detox](https://github.com/wix/Detox/) that runs e2e tests for web apps with [puppeteer](https://github.com/puppeteer/puppeteer/) behind the scenes. `detox-puppeteer` may be a good fit for you if you already use detox for testing your android + ios react-native apps and have a web version as well.
+`detox-puppeteer` is a custom driver for [Detox](https://github.com/wix/Detox/) that runs e2e tests for web apps with [Puppeteer](https://github.com/puppeteer/puppeteer/) behind the scenes. `detox-puppeteer` may be a good fit for you if you already use detox for testing your android + ios react-native apps and have a web version as well.
 
 ## Getting started
 
-This plugin requires detox >= 17.3.0.
+**This plugin requires Detox ≥ `19.0.0`.**
 
-1. yarn add --dev detox-puppeteer
+> For Detox v18 and v17, use detox-puppeteer `v3.x.x`.
+
+
+
+1. Run `yarn add --dev detox-puppeteer`
 1. In `package.json` add a new configuration for `detox-puppeteer`
 
 #### New Detox configuration format
