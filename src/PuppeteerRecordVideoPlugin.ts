@@ -12,16 +12,15 @@ class PuppeteerRecordVideoPlugin extends VideoArtifactPlugin {
   }
 
   createTestRecording() {
-    const { context } = this;
     let temporaryFilePath;
 
     return new Artifact({
       name: 'PuppeteerVideoRecording',
       start: async () => {
-        await this.driver.recordVideo(context.deviceId);
+        await this.driver.recordVideo();
       },
       stop: async () => {
-        temporaryFilePath = await this.driver.stopVideo(context.deviceId);
+        temporaryFilePath = await this.driver.stopVideo();
       },
       save: async (artifactPath) => {
         await FileArtifact.moveTemporaryFile(log, temporaryFilePath, artifactPath);
