@@ -1,8 +1,8 @@
 import * as _ from 'lodash';
+import { PuppeteerScreenRecorder } from 'puppeteer-screen-recorder';
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const Xvfb = require('xvfb');
 
 const log = require('detox/src/utils/logger').child({ __filename });
 const DeviceDriverBase = require('detox/src/devices/runtime/drivers/DeviceDriverBase');
@@ -15,11 +15,6 @@ import PuppeteerScreenshotPlugin from './PuppeteerScreenshotPlugin';
 import PuppeteerRecordVideoPlugin from './PuppeteerRecordVideoPlugin';
 import LoginTestee from './LoginTesteeAction';
 
-const displayNum = process.env.JEST_WORKER_ID
-  ? 100 + Number.parseInt(process.env.JEST_WORKER_ID, 10)
-  : undefined;
-const xvfb = new Xvfb({ silent: true, displayNum });
-const EXTENSION_DIRECTORY = path.join(__dirname, '../puppetcam');
 const TOOLBAR_SIZE = 124; // size of automated chrome + recording screen toolbars + url bar
 const NETWORKIDLE = 'networkidle0';
 
@@ -806,49 +801,27 @@ class PuppeteerEnvironmentValidator {
   }
 }
 
+let recorder;
+let exportPath;
 async function startRecordVideo() {
   debug('recordVideo', { page: !!page });
   if (!page) {
     recordVideo = true;
-    return;
+    const exportname = `puppet${Math.random()}.mp4`;
+    exportPath = path.join(os.homedir(), 'Downloads', exportname);
+    return exportPath;
   }
   recordVideo = false;
-  await page!.evaluate((filename) => {
-    window.postMessage({ type: 'REC_START' }, '*');
-  });
+  recorder = new PuppeteerScreenRecorder(page, { fps: 60 });
+  recorder.start(exportPath);
   isRecording = true;
+  return exportPath;
 }
 
 async function stopRecordVideo() {
   debug('stopVideo', { pendingExport });
-  if (pendingExport) {
-    const value = pendingExport;
-    pendingExport = null;
-    return value;
-  }
-
-  const exportname = `puppet${Math.random()}.webm`;
-  if (isRecording) {
-    await page!.evaluate((filename) => {
-      window.postMessage({ type: 'SET_EXPORT_PATH', filename: filename }, '*');
-      window.postMessage({ type: 'REC_STOP' }, '*');
-    }, exportname);
-    await page!.waitForSelector('html.detox-puppeteer-downloadComplete', { timeout: 5000 });
-    pendingExport = path.join(os.homedir(), 'Downloads', exportname);
-
-    // html.detox-puppeteer-downloadComplete get's set when the download starts, but we want to make sure
-    // it's saved to disk before continuing
-    for (let i = 0; i < 10; i++) {
-      if (fs.existsSync(pendingExport)) {
-        break;
-      }
-      await sleep(500);
-    }
-
-    isRecording = false;
-  }
-
-  return pendingExport;
+  await recorder?.stop();
+  recorder = undefined;
 }
 
 // TODO
@@ -976,9 +949,6 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
       page = null;
     }
 
-    // stopSync is safe to call even if startSync() wasn't
-    xvfb.stopSync();
-
     await super.cleanup(bundleId);
   }
 
@@ -1027,9 +997,6 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
     disableTouchIndicators = launchArgs.disableTouchIndicators;
     const defaultViewport = launchArgs.viewport || this._getDefaultViewport();
     const headless = this._getDeviceOption('headless', false);
-    if (!headless && process.env.CI) {
-      xvfb.startSync();
-    }
 
     browser =
       browser ||
@@ -1040,15 +1007,7 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
         // ignoreDefaultArgs: ['--enable-automation'], // works, but shows "not your default browser toolbar"
         args: [
           '--no-sandbox',
-          '--enable-usermedia-screen-capturing',
-          '--allow-http-screen-capture',
-          '--auto-select-desktop-capture-source=puppetcam',
-          '--load-extension=' + EXTENSION_DIRECTORY,
-          '--disable-extensions-except=' + EXTENSION_DIRECTORY,
           `--window-size=${defaultViewport.width},${defaultViewport.height + TOOLBAR_SIZE}`,
-          // https://webrtc.github.io/webrtc-org/testing/
-          '--allow-file-access-from-files',
-          '--use-fake-ui-for-media-stream',
         ],
       }));
 

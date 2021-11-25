@@ -11,8 +11,8 @@
   "dependencies": {
     "lodash": "^4.17.19",
     "puppeteer": "^11.0.0",
-    "tslib": "^2.2.0",
-    "xvfb": "^0.3.0"
+    "puppeteer-screen-recorder": "^2.0.2",
+    "tslib": "^2.2.0"
   },
   "devDependencies": {
     "@babel/runtime": "^7.8.4",
