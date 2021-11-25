@@ -520,11 +520,11 @@ class PuppeteerTestee {
 
   setupNetworkSynchronization() {
     // teardown before adding listeners to ensure we don't double subscribe to events
-    browser!.removeListener('disconnected', this.clearInflightRequests);
-    page!.removeListener('close', this.clearInflightRequests);
-    page!.removeListener('request', this.onRequest);
-    page!.removeListener('requestfinished', this.removeInflightRequest);
-    page!.removeListener('requestfailed', this.removeInflightRequest);
+    browser!.off('disconnected', this.clearInflightRequests);
+    page!.off('close', this.clearInflightRequests);
+    page!.off('request', this.onRequest);
+    page!.off('requestfinished', this.removeInflightRequest);
+    page!.off('requestfailed', this.removeInflightRequest);
 
     browser!.on('disconnected', this.clearInflightRequests);
     page!.on('close', this.clearInflightRequests);
@@ -605,169 +605,183 @@ class PuppeteerTestee {
     await this.client.ws.open();
 
     const onMessage = async (action) => {
-      if (!disableTouchIndicators) {
-        await setupTouchIndicators();
-      }
-      // https://github.com/wix/Detox/blob/ca620e760747ade9cb673c28262200b02e8e8a5d/docs/Troubleshooting.Synchronization.md#settimeout-and-setinterval
-      // async function setupDetoxTimeouts() {
-      //   await page.evaluate(() => {
-      //     if (!window._detoxOriginalSetTimeout)
-      //       window._detoxOriginalSetTimeout = window.setTimeout;
-      //     if (!window._detoxOriginalClearTimeout)
-      //       window._detoxOriginalClearTimeout = window.clearTimeout;
-      //     if (!window._detoxTimeouts) window._detoxTimeouts = {};
-      //     window.setTimeout = (callback, ms) => {
-      //       const stack = new Error().stack;
-      //       const isPuppeteerTimeout = stack.includes(
-      //         "waitForPredicatePageFunction"
-      //       );
-      //       if (isPuppeteerTimeout) {
-      //         window._detoxOriginalSetTimeout(callback, ms);
-      //         return;
-      //       }
-
-      //       const timeout = window._detoxOriginalSetTimeout(() => {
-      //         delete window._detoxTimeouts[timeout];
-      //         callback();
-      //       }, ms);
-      //       window._detoxTimeouts[timeout] = true;
-      //     };
-      //     window.clearTimeout = timeout => {
-      //       delete window._detoxTimeouts[timeout];
-      //       window._detoxOriginalClearTimeout(timeout);
-      //     };
-      //   });
-      // }
-
       try {
-        // TODO figure out why we need a try catch here. Sometimes it errors as "Target closed"
-        // Also firebase uses a setTimeout on repeat which doesn't seem compatible with timeout logic
-        // https://github.com/firebase/firebase-js-sdk/blob/6b53e0058483c9002d2fe56119f86fc9fb96b56c/packages/auth/src/storage/indexeddb.js#L644
-        // setupDetoxTimeouts();
-      } catch (e) {
-        // console.warn(e);
-      }
-
-      // Always re-setup in case we created a new page object since
-      // the last action
-      this.setupNetworkSynchronization();
-
-      const sendResponse = async (response, options: { skipSynchronization?: boolean } = {}) => {
-        debugTestee('sendResponse', response);
-        const performSynchronization = enableSynchronization && !options.skipSynchronization;
-        const sendResponsePromise = performSynchronization
-          ? this.synchronizeNetwork()
-          : Promise.resolve();
-
-        const animationsSettledPromise = performSynchronization
-          ? new Promise<void>((resolve) => {
-              const interval = setInterval(() => {
-                Object.entries(animationTimeById).forEach(async ([id, duration]) => {
-                  let result: { currentTime: number | null } = {
-                    currentTime: null,
-                  };
-                  try {
-                    result = (await client.send('Animation.getCurrentTime', {
-                      id: id,
-                    })) as any;
-                    // if this call errors out, just assume the animation is done
-                  } catch (e) {}
-                  if (result.currentTime === null || result.currentTime > duration) {
-                    delete animationTimeById[id];
-                  }
-                });
-                if (Object.keys(animationTimeById).length === 0) {
-                  clearInterval(interval);
-                  resolve();
-                }
-              }, 100);
-            })
-          : Promise.resolve();
-
-        return sendResponsePromise
-          .then(() => animationsSettledPromise)
-          .then(() => {
-            if (!performSynchronization) return;
-            return page!.waitForFunction(() => {
-              // @ts-ignore
-              return Object.keys(window._detoxTimeouts || {}).length === 0;
-            });
-          })
-          .then(() => this.client.ws.ws.send(JSON.stringify(response)));
-      };
-
-      let messageId;
-      try {
-        messageId = action.messageId;
-        debugTestee('PuppeteerTestee.message', JSON.stringify(action, null, 2));
-        if (!action.type) {
-          return;
+        if (!disableTouchIndicators) {
+          await setupTouchIndicators();
         }
-        if (action.type === 'loginSuccess') {
-          return;
-        } else if (action.type === 'cleanup') {
-          if (browser) {
-            await browser.close();
-            browser = null;
-            page = null;
+        // https://github.com/wix/Detox/blob/ca620e760747ade9cb673c28262200b02e8e8a5d/docs/Troubleshooting.Synchronization.md#settimeout-and-setinterval
+        // async function setupDetoxTimeouts() {
+        //   await page.evaluate(() => {
+        //     if (!window._detoxOriginalSetTimeout)
+        //       window._detoxOriginalSetTimeout = window.setTimeout;
+        //     if (!window._detoxOriginalClearTimeout)
+        //       window._detoxOriginalClearTimeout = window.clearTimeout;
+        //     if (!window._detoxTimeouts) window._detoxTimeouts = {};
+        //     window.setTimeout = (callback, ms) => {
+        //       const stack = new Error().stack;
+        //       const isPuppeteerTimeout = stack.includes(
+        //         "waitForPredicatePageFunction"
+        //       );
+        //       if (isPuppeteerTimeout) {
+        //         window._detoxOriginalSetTimeout(callback, ms);
+        //         return;
+        //       }
+
+        //       const timeout = window._detoxOriginalSetTimeout(() => {
+        //         delete window._detoxTimeouts[timeout];
+        //         callback();
+        //       }, ms);
+        //       window._detoxTimeouts[timeout] = true;
+        //     };
+        //     window.clearTimeout = timeout => {
+        //       delete window._detoxTimeouts[timeout];
+        //       window._detoxOriginalClearTimeout(timeout);
+        //     };
+        //   });
+        // }
+
+        try {
+          // TODO figure out why we need a try catch here. Sometimes it errors as "Target closed"
+          // Also firebase uses a setTimeout on repeat which doesn't seem compatible with timeout logic
+          // https://github.com/firebase/firebase-js-sdk/blob/6b53e0058483c9002d2fe56119f86fc9fb96b56c/packages/auth/src/storage/indexeddb.js#L644
+          // setupDetoxTimeouts();
+        } catch (e) {
+          // console.warn(e);
+        }
+
+        // Always re-setup in case we created a new page object since
+        // the last action
+        this.setupNetworkSynchronization();
+
+        const sendResponse = async (response, options: { skipSynchronization?: boolean } = {}) => {
+          debugTestee('sendResponse', response);
+          const performSynchronization = enableSynchronization && !options.skipSynchronization;
+          const sendResponsePromise = performSynchronization
+            ? this.synchronizeNetwork()
+            : Promise.resolve();
+
+          const animationsSettledPromise = performSynchronization
+            ? new Promise<void>((resolve) => {
+                const interval = setInterval(() => {
+                  Object.entries(animationTimeById).forEach(async ([id, duration]) => {
+                    let result: { currentTime: number | null } = {
+                      currentTime: null,
+                    };
+                    try {
+                      result = (await client.send('Animation.getCurrentTime', {
+                        id: id,
+                      })) as any;
+                      // if this call errors out, just assume the animation is done
+                    } catch (e) {}
+                    if (result.currentTime === null || result.currentTime > duration) {
+                      delete animationTimeById[id];
+                    }
+                  });
+                  if (Object.keys(animationTimeById).length === 0) {
+                    clearInterval(interval);
+                    resolve();
+                  }
+                }, 100);
+              })
+            : Promise.resolve();
+
+          return sendResponsePromise
+            .then(() => animationsSettledPromise)
+            .then(() => {
+              if (!performSynchronization) return;
+              return page!.waitForFunction(() => {
+                // @ts-ignore
+                return Object.keys(window._detoxTimeouts || {}).length === 0;
+              });
+            })
+            .then(() => this.client.ws.ws.send(JSON.stringify(response)));
+        };
+
+        let messageId;
+        try {
+          messageId = action.messageId;
+          debugTestee('PuppeteerTestee.message', JSON.stringify(action, null, 2));
+          if (!action.type) {
+            return;
           }
-          await sendResponse(
-            {
-              type: 'cleanupDone',
-              messageId: action.messageId,
-            },
-            { skipSynchronization: true },
-          );
-        } else if (action.type === 'deliverPayload') {
-          // Need to sychronize network here so that we dont have any network requests
-          // lost in the page navigation
-          if (enableSynchronization) {
-            await this.synchronizeNetwork();
-          }
-          if (action.params && action.params.url) {
-            await page!.goto(action.params.url, { waitUntil: NETWORKIDLE });
-            // await setupDetoxTimeouts();
-          }
-          await sendResponse({
-            type: 'deliverPayloadDone',
-            messageId: action.messageId,
-          });
-        } else if (action.type === 'currentStatus') {
-          await sendResponse(
-            { type: 'currentStatusResult', params: { resources: [] } },
-            { skipSynchronization: true },
-          );
-        } else {
-          try {
+          if (action.type === 'loginSuccess') {
+            return;
+          } else if (action.type === 'cleanup') {
+            if (browser) {
+              await browser.close();
+              browser = null;
+              page = null;
+            }
+            await sendResponse(
+              {
+                type: 'cleanupDone',
+                messageId: action.messageId,
+              },
+              { skipSynchronization: true },
+            );
+          } else if (action.type === 'deliverPayload') {
+            // Need to sychronize network here so that we dont have any network requests
+            // lost in the page navigation
             if (enableSynchronization) {
               await this.synchronizeNetwork();
             }
-            const result = await this.invoke(action.params);
-            if (result === false || result === null) throw new Error('invalid result');
+            if (action.params && action.params.url) {
+              await page!.goto(action.params.url, { waitUntil: NETWORKIDLE });
+              // await setupDetoxTimeouts();
+            }
             await sendResponse({
-              type: 'invokeResult',
+              type: 'deliverPayloadDone',
               messageId: action.messageId,
             });
-          } catch (error) {
-            this.client.ws.ws.send(
-              JSON.stringify({
-                type: 'testFailed',
-                messageId,
-                params: { details: JSON.stringify(action) + '\n' + error.message },
-              }),
+          } else if (action.type === 'currentStatus') {
+            const status = `App is idle.
+
+Network requests (${Object.keys(this.inflightRequests).length}): ${Object.keys(
+              this.inflightRequests,
+            )}
+`.trim();
+            await sendResponse(
+              {
+                type: 'currentStatusResult',
+                messageId: action.messageId,
+                params: { status },
+              },
+              { skipSynchronization: true },
             );
+          } else {
+            try {
+              if (enableSynchronization) {
+                await this.synchronizeNetwork();
+              }
+              const result = await this.invoke(action.params);
+              if (result === false || result === null) throw new Error('invalid result');
+              await sendResponse({
+                type: 'invokeResult',
+                messageId: action.messageId,
+              });
+            } catch (error) {
+              this.client.ws.ws.send(
+                JSON.stringify({
+                  type: 'testFailed',
+                  messageId,
+                  params: { details: JSON.stringify(action) + '\n' + error.message },
+                }),
+              );
+            }
           }
+        } catch (error) {
+          log.error(error);
+          await sendResponse({
+            type: 'error',
+            messageId: messageId,
+            params: { error },
+          });
+          await browser!.close();
+          browser = null;
+          page = null;
         }
       } catch (error) {
-        log.error(error);
-        await sendResponse({
-          type: 'error',
-          messageId: messageId,
-          params: { error },
-        });
-        await browser!.close();
-        browser = null;
-        page = null;
+        console.error(error);
       }
     };
 
@@ -776,6 +790,7 @@ class PuppeteerTestee {
     }
     this.client.ws.setEventCallback('invoke', onMessage);
     this.client.ws.setEventCallback('cleanup', onMessage);
+    this.client.ws.setEventCallback('currentStatus', onMessage);
 
     await this.client.sendAction(new LoginTestee(this.sessionId, 'app'));
   }
@@ -791,14 +806,66 @@ class PuppeteerEnvironmentValidator {
   }
 }
 
+async function startRecordVideo() {
+  debug('recordVideo', { page: !!page });
+  if (!page) {
+    recordVideo = true;
+    return;
+  }
+  recordVideo = false;
+  await page!.evaluate((filename) => {
+    window.postMessage({ type: 'REC_START' }, '*');
+  });
+  isRecording = true;
+}
+
+async function stopRecordVideo() {
+  debug('stopVideo', { pendingExport });
+  if (pendingExport) {
+    const value = pendingExport;
+    pendingExport = null;
+    return value;
+  }
+
+  const exportname = `puppet${Math.random()}.webm`;
+  if (isRecording) {
+    await page!.evaluate((filename) => {
+      window.postMessage({ type: 'SET_EXPORT_PATH', filename: filename }, '*');
+      window.postMessage({ type: 'REC_STOP' }, '*');
+    }, exportname);
+    await page!.waitForSelector('html.detox-puppeteer-downloadComplete', { timeout: 5000 });
+    pendingExport = path.join(os.homedir(), 'Downloads', exportname);
+
+    // html.detox-puppeteer-downloadComplete get's set when the download starts, but we want to make sure
+    // it's saved to disk before continuing
+    for (let i = 0; i < 10; i++) {
+      if (fs.existsSync(pendingExport)) {
+        break;
+      }
+      await sleep(500);
+    }
+
+    isRecording = false;
+  }
+
+  return pendingExport;
+}
+
+// TODO
+async function takeScreenshot() {}
+
 class PuppeteerArtifactPluginsProvider {
-  declareArtifactPlugins() {
+  declareArtifactPlugins(args) {
     debug('declareArtifactPlugins');
     return {
       // instruments: (api) => new SimulatorInstrumentsPlugin({ api, client }),
       // log: (api) => new SimulatorLogPlugin({ api, appleSimUtils }),
-      screenshot: (api) => new PuppeteerScreenshotPlugin({ api, driver: this }),
-      video: (api) => new PuppeteerRecordVideoPlugin({ api, driver: this }),
+      screenshot: (api) => new PuppeteerScreenshotPlugin({ api, driver: takeScreenshot }),
+      video: (api) =>
+        new PuppeteerRecordVideoPlugin({
+          api,
+          driver: { recordVideo: startRecordVideo, stopVideo: stopRecordVideo },
+        }),
     };
   }
 }
@@ -899,51 +966,6 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
     return 'web';
   }
 
-  async recordVideo() {
-    debug('recordVideo', { page: !!page });
-    if (!page) {
-      recordVideo = true;
-      return;
-    }
-    recordVideo = false;
-    await page!.evaluate((filename) => {
-      window.postMessage({ type: 'REC_START' }, '*');
-    });
-    isRecording = true;
-  }
-
-  async stopVideo() {
-    debug('stopVideo', { pendingExport });
-    if (pendingExport) {
-      const value = pendingExport;
-      pendingExport = null;
-      return value;
-    }
-
-    const exportname = `puppet${Math.random()}.webm`;
-    if (isRecording) {
-      await page!.evaluate((filename) => {
-        window.postMessage({ type: 'SET_EXPORT_PATH', filename: filename }, '*');
-        window.postMessage({ type: 'REC_STOP' }, '*');
-      }, exportname);
-      await page!.waitForSelector('html.detox-puppeteer-downloadComplete', { timeout: 5000 });
-      pendingExport = path.join(os.homedir(), 'Downloads', exportname);
-
-      // html.detox-puppeteer-downloadComplete get's set when the download starts, but we want to make sure
-      // it's saved to disk before continuing
-      for (let i = 0; i < 10; i++) {
-        if (fs.existsSync(pendingExport)) {
-          break;
-        }
-        await sleep(500);
-      }
-
-      isRecording = false;
-    }
-
-    return pendingExport;
-  }
-
   async cleanup(bundleId) {
     debug('TODO cleanup', { bundleId, browser: !!browser });
     // await sleep(100000);
@@ -1020,11 +1042,13 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
           '--no-sandbox',
           '--enable-usermedia-screen-capturing',
           '--allow-http-screen-capture',
-          '--allow-file-access-from-files',
           '--auto-select-desktop-capture-source=puppetcam',
           '--load-extension=' + EXTENSION_DIRECTORY,
           '--disable-extensions-except=' + EXTENSION_DIRECTORY,
           `--window-size=${defaultViewport.width},${defaultViewport.height + TOOLBAR_SIZE}`,
+          // https://webrtc.github.io/webrtc-org/testing/
+          '--allow-file-access-from-files',
+          '--use-fake-ui-for-media-stream',
         ],
       }));
 
@@ -1036,7 +1060,7 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
       page = (await browser.pages())[0];
       await page!.goto(url, { waitUntil: NETWORKIDLE });
       if (recordVideo) {
-        await this.recordVideo();
+        await startRecordVideo();
       }
     }
 
@@ -1069,7 +1093,7 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
     if (isRecording) {
       recordVideo = true;
     }
-    await this.stopVideo();
+    await stopRecordVideo();
     await this.emitter.emit('beforeTerminateApp', { deviceId: this.deviceId, bundleId });
     if (browser) {
       await browser.close();
@@ -1131,8 +1155,7 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
     }
   }
 
-  async clearKeychain() {
-  }
+  async clearKeychain() {}
 
   async resetContentAndSettings() {
     debug('TODO resetContentAndSettings');
@@ -1146,8 +1169,7 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
     }
   }
 
-  getLogsPaths() {
-  }
+  getLogsPaths() {}
 
   async waitForBackground() {
     debug('TODO waitForBackground');
@@ -1168,11 +1190,9 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
     return tempPath;
   }
 
-  async setStatusBar(flags) {
-  }
+  async setStatusBar(flags) {}
 
-  async resetStatusBar() {
-  }
+  async resetStatusBar() {}
 
   async waitUntilReady() {
     await this.testee.connect();
