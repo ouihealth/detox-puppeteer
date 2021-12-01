@@ -553,6 +553,7 @@ class PuppeteerTestee {
   }
 
   removeInflightRequest(request) {
+    request.__completed = true;
     debugTestee('offRequest', request.uid);
     delete this.inflightRequests[request.uid];
     if (Object.keys(this.inflightRequests).length === 0) {
@@ -561,6 +562,10 @@ class PuppeteerTestee {
   }
 
   onRequest(request) {
+    if (request.completed) {
+      debugTestee('request completed before onRequest invoked', request.url());
+      return;
+    }
     request.uid = Math.random();
     const url = request.url();
     const isIgnored =
