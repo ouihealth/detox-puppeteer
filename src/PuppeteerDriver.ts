@@ -563,9 +563,12 @@ class PuppeteerTestee {
   onRequest(request) {
     request.uid = Math.random();
     const url = request.url();
-    const isIgnored = urlBlacklist.some((candidate) => {
-      return url.match(new RegExp(candidate));
-    });
+    const isIgnored =
+      // data urls dont get a requestfinished callback
+      url.startsWith('data:') ||
+      urlBlacklist.some((candidate) => {
+        return url.match(new RegExp(candidate));
+      });
     if (!isIgnored) {
       debugTestee('onRequest', request.uid, url, request.postData());
       this.inflightRequests[request.uid] = true;
