@@ -790,6 +790,7 @@ Network requests (${Object.keys(this.inflightRequests).length}): ${Object.keys(
       this.client.ws.setEventCallback('invoke', onMessage);
       this.client.ws.setEventCallback('cleanup', onMessage);
       this.client.ws.setEventCallback('currentStatus', onMessage);
+      this.client.ws.setEventCallback('deliverPayload', onMessage);
 
       await this.client.sendAction(new LoginTestee(this.sessionId, 'app'));
     }
