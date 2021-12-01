@@ -562,7 +562,7 @@ class PuppeteerTestee {
   }
 
   onRequest(request) {
-    if (request.completed) {
+    if (request.__completed) {
       debugTestee('request completed before onRequest invoked', request.url());
       return;
     }
