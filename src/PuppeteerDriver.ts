@@ -130,7 +130,6 @@ class PuppeteerTestee {
     const { client } = deps;
     this.sessionId = client._sessionId;
     this.client = new Client({ sessionId: this.sessionId, server: client._serverUrl });
-    this.client.ws = this.client._asyncWebSocket;
     this.inflightRequests = {};
     this.inflightRequestsSettledCallback = null;
     this.onRequest = this.onRequest.bind(this);
@@ -581,14 +580,6 @@ class PuppeteerTestee {
   }
 
   async connect() {
-    // this.client.ws.on('error', (e) => {
-    //   console.error(e);
-    // });
-
-    // this.client.ws.on('close', () => {
-    //   console.log('close');
-    // });
-
     const client = await page!.target().createCDPSession();
     await client.send('Animation.enable');
 
@@ -605,8 +596,9 @@ class PuppeteerTestee {
     });
     /* end animation synchronization */
 
-    if (!this.client.ws.isOpen) {
-      await this.client.ws.open();
+    if (!this.client.isConnected) {
+      // replace with direct call to client.open() after detox > 19.3.0 is released
+      await this.client._asyncWebSocket.open();
 
       const onMessage = async (action) => {
         try {
@@ -701,7 +693,7 @@ class PuppeteerTestee {
                   return Object.keys(window._detoxTimeouts || {}).length === 0;
                 });
               })
-              .then(() => this.client.ws.ws.send(JSON.stringify(response)));
+              .then(() => this.client.sendAction(response));
           };
 
           let messageId;
@@ -767,13 +759,11 @@ Network requests (${Object.keys(this.inflightRequests).length}): ${Object.keys(
                   messageId: action.messageId,
                 });
               } catch (error) {
-                this.client.ws.ws.send(
-                  JSON.stringify({
-                    type: 'testFailed',
-                    messageId,
-                    params: { details: JSON.stringify(action) + '\n' + error.message },
-                  }),
-                );
+                this.client.sendAction({
+                  type: 'testFailed',
+                  messageId,
+                  params: { details: JSON.stringify(action) + '\n' + error.message },
+                });
               }
             }
           } catch (error) {
@@ -792,13 +782,12 @@ Network requests (${Object.keys(this.inflightRequests).length}): ${Object.keys(
         }
       };
 
-      if (!this.client.ws.ws) {
-        this.client.ws.ws = this.client.ws._ws;
-      }
-      this.client.ws.setEventCallback('invoke', onMessage);
-      this.client.ws.setEventCallback('cleanup', onMessage);
-      this.client.ws.setEventCallback('currentStatus', onMessage);
-      this.client.ws.setEventCallback('deliverPayload', onMessage);
+      // list of possible actions can be found here: https://github.com/wix/Detox/blob/0beef1a7bfe0f4bf477fa5cdbb318b5c3a960aae/detox/ios/Detox/DetoxManager.swift#L233
+      this.client.setEventCallback('invoke', onMessage);
+      this.client.setEventCallback('cleanup', onMessage);
+      this.client.setEventCallback('currentStatus', onMessage);
+      this.client.setEventCallback('deliverPayload', onMessage);
+      this.client.setEventCallback('testerDisconnected', () => {});
 
       await this.client.sendAction(new LoginTestee(this.sessionId, 'app'));
     }
