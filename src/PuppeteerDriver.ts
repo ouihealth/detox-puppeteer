@@ -597,8 +597,7 @@ class PuppeteerTestee {
     /* end animation synchronization */
 
     if (!this.client.isConnected) {
-      // replace with direct call to client.open() after detox > 19.3.0 is released
-      await this.client._asyncWebSocket.open();
+      await this.client.open();
 
       const onMessage = async (action) => {
         try {

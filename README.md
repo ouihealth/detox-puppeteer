@@ -4,7 +4,7 @@
 
 ## Getting started
 
-**This plugin requires Detox ≥ `19.0.0`.**
+**This plugin requires Detox ≥ `19.3.1`.**
 
 > For Detox v18 and v17, use detox-puppeteer `v3.x.x`.
 
