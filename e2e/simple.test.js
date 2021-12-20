@@ -43,6 +43,13 @@ describe('simple', () => {
     await expect(element(by.id('mytestid2'))).toNotExist();
   });
 
+  it('can execute the driver 2', async () => {
+    await device.launchApp();
+
+    await expect(element(by.id('mytestid'))).toBeVisible();
+    await expect(element(by.id('mytestid2'))).toNotExist();
+  });
+
   afterAll(async () => {
     return new Promise((res) => {
       server.destroy(res);

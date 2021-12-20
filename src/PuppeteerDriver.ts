@@ -596,7 +596,7 @@ class PuppeteerTestee {
     });
     /* end animation synchronization */
 
-    if (!this.client.isConnected) {
+    if (!this.client._asyncWebSocket.isOpen) {
       await this.client.open();
 
       const onMessage = async (action) => {
