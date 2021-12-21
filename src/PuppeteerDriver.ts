@@ -220,7 +220,11 @@ class PuppeteerTestee {
 
           return element;
         },
-        { timeout: timeoutArg ? timeoutArg.args[0].timeout : 200 },
+        {
+          timeout: timeoutArg
+            ? timeoutArg.args[0].timeout
+            : /* sometimes puppeteer unable to evaluate in less than ~800ms so we give some extra cushion */ 1500,
+        },
         { visibleArg, selectorArg, indexArg },
       );
 
