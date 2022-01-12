@@ -146,6 +146,9 @@ class PuppeteerTestee {
     const visibleArg = args.find(
       (a) => a.method === 'option' && typeof a.args[0].visible === 'boolean',
     );
+    const existArg = args.find(
+      (a) => a.method === 'option' && typeof a.args[0].exists === 'boolean',
+    );
     const indexArg = args.find((a) => a.method === 'index');
     let result: puppeteer.JSHandle | null = null;
 
@@ -249,6 +252,10 @@ class PuppeteerTestee {
       if (visibleArg) {
         const shouldBeVisible = visibleArg.args[0].visible === true;
         if (shouldBeVisible) throw new Error(e.toString() + selectorArg.args[0]);
+      }
+      if (existArg) {
+        const shouldNotExist = existArg.args[0].exists === false;
+        if (shouldNotExist) return true;
       }
       // console.warn(e);
     }
