@@ -283,8 +283,10 @@ class PuppeteerTestee {
         await element?.click();
         await element?.evaluate((node) => {
           const contentLength = node.innerHTML.length;
-          // @ts-expect-error
-          node.setSelectionRange(contentLength, contentLength);
+          if (node.attributes.getNamedItem('type')?.value !== 'email') {
+            // @ts-expect-error
+            node.setSelectionRange(contentLength, contentLength);
+          }
         });
       }
     }
