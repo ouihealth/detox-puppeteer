@@ -281,6 +281,11 @@ class PuppeteerTestee {
       const isFocused = await element?.evaluate((el) => document.activeElement === el);
       if (!isFocused) {
         await element?.click();
+        await element?.evaluate((node) => {
+          const contentLength = node.innerHTML.length;
+          // @ts-expect-error
+          node.setSelectionRange(contentLength, contentLength);
+        });
       }
     }
 
