@@ -193,7 +193,7 @@ class PuppeteerTestee {
 
           // https://github.com/puppeteer/puppeteer/blob/49f25e2412fbe3ac43ebc6913a582718066486cc/experimental/puppeteer-firefox/lib/JSHandle.js#L190-L204
           function isIntersectingViewport(el) {
-            return new Promise<number>((resolve) => {
+            return new Promise((resolve) => {
               const observer = new IntersectionObserver((entries) => {
                 resolve(entries[0].intersectionRatio);
                 observer.disconnect();
@@ -202,6 +202,7 @@ class PuppeteerTestee {
               // Firefox doesn't call IntersectionObserver callback unless
               // there are rafs.
               requestAnimationFrame(() => {});
+              // @ts-ignore
             }).then((visibleRatio) => visibleRatio > 0);
           }
 
@@ -210,13 +211,15 @@ class PuppeteerTestee {
           if (visibleArg) {
             if (visibleArg.args[0].visible === false) {
               if (element) {
-                return !isIntersectingViewport(element);
+                return isIntersectingViewport(element).then((isVisible) => !isVisible);
               } else {
                 return true;
               }
             } else if (visibleArg.args[0].visible === true) {
               if (element) {
-                return isIntersectingViewport(element) ? element : false;
+                return isIntersectingViewport(element).then((isVisible) =>
+                  isVisible ? element : false,
+                );
               }
             }
           }
