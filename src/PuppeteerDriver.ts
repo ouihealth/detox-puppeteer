@@ -511,6 +511,55 @@ class PuppeteerTestee {
     return result;
   }
 
+  async selectElementWhileScrolling(
+    search,
+    action: {
+      target: {
+        type: 'action';
+        value: 'action';
+      };
+      method: 'scroll';
+      args: [string, number];
+    },
+    actionMatcher,
+  ) {
+    const searchWithTimeout = {
+      ...search,
+      args: [
+        ...search.args,
+        {
+          target: {
+            type: 'matcher',
+            value: 'matcher',
+          },
+          method: 'option',
+          args: [
+            {
+              timeout: 10,
+            },
+          ],
+        },
+      ],
+    };
+    const actionElement = await this.selectElementWithMatcher(actionMatcher);
+    const numSteps = 20;
+    const deltaScroll = { ...action, args: [action.args[0], action.args[1] / numSteps] };
+
+    let result;
+    for (let step = 0; step < numSteps; step = step + 1) {
+      try {
+        result = await this.invoke(searchWithTimeout);
+        break;
+      } catch (e) {
+        result = e;
+        await this.performAction(actionElement! as puppeteer.ElementHandle, deltaScroll);
+      }
+    }
+
+    if (result instanceof Error) throw result;
+    return result;
+  }
+
   async invoke(params) {
     debugTestee('invoke', JSON.stringify(params, null, 2));
     const promises = params.args.map((arg) => {

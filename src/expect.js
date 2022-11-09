@@ -326,21 +326,30 @@ class WaitForActionInteraction extends Interaction {
   }
 
   async _execute(searchAction) {
-    const _interactionCall = GreyInteraction.usingSearchActionOnElementWithMatcher(
-      invoke.callDirectly(callThunk(this._element)),
-      callThunk(searchAction),
-      callThunk(this._searchMatcher),
-    );
+    const _interactionCall = {
+      target: {
+        type: 'this',
+        value: 'this',
+      },
+      method: 'selectElementWhileScrolling',
+      args: [callThunk(this._element), callThunk(searchAction), callThunk(this._searchMatcher)],
+    };
 
-    this._call = GreyInteraction.assertWithMatcher(
-      invoke.callDirectly(_interactionCall),
-      callThunk(this._originalMatcher),
-    );
+    this._call = {
+      target: {
+        type: 'this',
+        value: 'this',
+      },
+      method: 'assertWithMatcher',
+      args: [invoke.callDirectly(_interactionCall), callThunk(this._originalMatcher)],
+    };
+
     await this.execute();
   }
+
   async scroll(amount, direction = 'down', startScrollX, startScrollY) {
     // override the user's element selection with an extended matcher that looks for UIScrollView children
-    this._searchMatcher = this._searchMatcher._extendToDescendantScrollViews();
+    // this._searchMatcher = this._searchMatcher._extendToDescendantScrollViews();
     await this._execute(new ScrollAmountAction(direction, amount, startScrollX, startScrollY));
   }
 }
