@@ -107,14 +107,13 @@ class IndexMatcher extends Matcher {
 class LabelMatcher extends Matcher {
   constructor(value) {
     super();
-    // TODO change to accessibilityLabel
     this._call = {
       target: {
         type: 'matcher',
         value: 'matcher',
       },
       method: 'selector',
-      args: [`[contains(., '${value}') or @value='${value}']`],
+      args: [`[@aria-label='${value}']`],
     };
   }
 }
