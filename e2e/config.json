@@ -1,8 +1,0 @@
-{
-  "testEnvironment": "./environment",
-  "testRunner": "jest-circus/runner",
-  "maxWorkers": 1,
-  "testRegex": "e2e/.*test.js",
-  "reporters": ["detox/runners/jest/streamlineReporter"],
-  "verbose": true
-}

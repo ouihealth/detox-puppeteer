@@ -861,6 +861,10 @@ Network requests (${Object.keys(this.inflightRequests).length}): ${Object.keys(
       await this.client.sendAction(new LoginTestee(this.sessionId, 'app'));
     }
   }
+
+  async disconnect() {
+    this.client.cleanup();
+  }
 }
 
 class PuppeteerEnvironmentValidator {
@@ -1021,6 +1025,7 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
       page = null;
     }
 
+    await this.testee.disconnect();
     await super.cleanup(bundleId);
   }
 
