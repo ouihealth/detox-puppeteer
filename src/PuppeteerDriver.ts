@@ -1084,6 +1084,11 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
         // ignoreDefaultArgs: ['--enable-automation'], // works, but shows "not your default browser toolbar"
         args: [
           '--no-sandbox',
+          // https://github.com/puppeteer/puppeteer/issues/8085
+          // This should be safe to disable since tests shouldn't be exposing any important information
+          // to potentially untrusted processes. Also, the developer controls all resources loaded
+          // on the page
+          '--disable-site-isolation-trials',
           `--window-size=${defaultViewport.width},${defaultViewport.height + TOOLBAR_SIZE}`,
         ],
       }));
