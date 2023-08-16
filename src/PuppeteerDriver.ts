@@ -166,6 +166,7 @@ class PuppeteerTestee {
       await page!.waitForFunction(() => {
         return true;
       });
+      // @ts-ignore
       result = await page!.waitForFunction(
         ({ selectorArg, indexArg, visibleArg }) => {
           const xpath = selectorArg.args[0];
