@@ -25,7 +25,7 @@ const bottom = element(by.id('bottom'));
 
 describe('scrollTo', () => {
   it('scrolls to edge vertically', async () => {
-    await device.launchApp();
+    await device.launchApp({ url: `http://localhost:${server.address().port}` });
 
     await expect(scrollable).toBeVisible();
     await expect(bottom).toBeNotVisible();
@@ -38,7 +38,7 @@ describe('scrollTo', () => {
 
 describe('scroll', () => {
   it('scrolls by offset provided', async () => {
-    await device.launchApp();
+    await device.launchApp({ url: `http://localhost:${server.address().port}` });
 
     await expect(scrollable).toBeVisible();
     await expect(bottom).toBeNotVisible();
@@ -55,7 +55,7 @@ describe('scroll', () => {
 
   describe('whileElement', () => {
     it('scrolls until the element is visible and stops', async () => {
-      await device.launchApp();
+      await device.launchApp({ url: `http://localhost:${server.address().port}` });
 
       await expect(scrollable).toBeVisible();
       await expect(bottom).toBeNotVisible();

@@ -929,9 +929,9 @@ class PuppeteerDeviceAllocation {
     this.emitter = deps.eventEmitter;
   }
 
-  async allocate(deviceConfig) {
+  async allocate(deviceConfig): Promise<PuppeteerAllocCookie> {
     debug('PuppeteerAllocation.allocate', deviceConfig.device);
-    return { id: '' };
+    return { id: Math.random().toString() };
   }
 
   async free(deviceCookie: PuppeteerAllocCookie, { shutdown }) {
@@ -1007,8 +1007,7 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
   }
 
   async cleanup(bundleId) {
-    debug('TODO cleanup', { bundleId, browser: !!browser });
-    // await sleep(100000);
+    debug('cleanup', { bundleId, browser: !!browser });
 
     if (browser) {
       await browser.close();
@@ -1099,7 +1098,7 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
     await this._applyPermissions();
 
     // const pid = await this.applesimutils.launch(deviceId, bundleId, launchArgs, languageAndLocale);
-    const pid = 'PID';
+    const pid = deviceId;
     await this.emitter.emit('launchApp', {
       bundleId,
       deviceId,

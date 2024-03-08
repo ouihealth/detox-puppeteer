@@ -9,14 +9,14 @@ describe('simple', () => {
   });
 
   it('can execute the driver', async () => {
-    await device.launchApp();
+    await device.launchApp({ url: `http://localhost:${server.address().port}` });
 
     await expect(element(by.id('mytestid'))).toBeVisible();
     await expect(element(by.id('mytestid2'))).toNotExist();
   });
 
   it('can execute the driver 2', async () => {
-    await device.launchApp();
+    await device.launchApp({ url: `http://localhost:${server.address().port}` });
 
     await expect(element(by.id('mytestid'))).toBeVisible();
     await expect(element(by.id('mytestid2'))).toNotExist();

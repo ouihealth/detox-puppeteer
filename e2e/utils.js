@@ -27,7 +27,7 @@ async function startServer(content) {
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.end(content || `<div data-testid="mytestid">hello world</div>`);
       })
-      .listen(8889, () => {
+      .listen(0, () => {
         resolve(server);
       });
     enableDestroy(server);

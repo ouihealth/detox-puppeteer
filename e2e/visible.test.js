@@ -23,7 +23,7 @@ describe('visible', () => {
     const scrollable = element(by.id('scrollable'));
     const top = element(by.id('top'));
 
-    await device.launchApp();
+    await device.launchApp({ url: `http://localhost:${server.address().port}` });
 
     await waitFor(scrollable)
       .toBeVisible()
@@ -34,7 +34,7 @@ describe('visible', () => {
   });
 
   it('waits for non visible elements', async () => {
-    await device.launchApp();
+    await device.launchApp({ url: `http://localhost:${server.address().port}` });
 
     const middle = element(by.id('middle'));
     const bottom = element(by.id('bottom'));
@@ -48,7 +48,7 @@ describe('visible', () => {
   });
 
   it('expects visible elements', async () => {
-    await device.launchApp();
+    await device.launchApp({ url: `http://localhost:${server.address().port}` });
 
     const scrollable = element(by.id('scrollable'));
     const top = element(by.id('top'));
@@ -58,7 +58,7 @@ describe('visible', () => {
   });
 
   it('expects non visible elements', async () => {
-    await device.launchApp();
+    await device.launchApp({ url: `http://localhost:${server.address().port}` });
     const middle = element(by.id('middle'));
     const bottom = element(by.id('bottom'));
 
@@ -69,7 +69,7 @@ describe('visible', () => {
 
 describe('exist', () => {
   it('matches for existing elements', async () => {
-    await device.launchApp();
+    await device.launchApp({ url: `http://localhost:${server.address().port}` });
 
     const scrollable = element(by.id('scrollable'));
     const top = element(by.id('top'));
@@ -83,7 +83,7 @@ describe('exist', () => {
   });
 
   it('matches for non existing elements', async () => {
-    await device.launchApp();
+    await device.launchApp({ url: `http://localhost:${server.address().port}` });
 
     await expect(element(by.id('RandomJunk959'))).toNotExist();
   });

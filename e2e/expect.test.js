@@ -14,7 +14,7 @@ beforeAll(async () => {
       <div data-testid="bottom">my bottom</div>
     </div>
     `);
-  await device.launchApp();
+  await device.launchApp({ url: `http://localhost:${server.address().port}` });
 });
 
 describe('id', () => {
