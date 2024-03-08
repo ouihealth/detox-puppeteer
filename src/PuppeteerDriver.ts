@@ -126,10 +126,8 @@ class PuppeteerTestee {
   sessionId: string;
 
   constructor(deps) {
-    // console.log('PuppeteerTestee.constructor', config);
-    const { client } = deps;
-    this.sessionId = client._sessionId;
-    this.client = new Client({ sessionId: this.sessionId, server: client._serverUrl });
+    this.sessionId = deps.sessionConfig.sessionId;
+    this.client = new Client({ sessionId: this.sessionId, server: deps.sessionConfig.server });
     this.inflightRequests = {};
     this.inflightRequestsSettledCallback = null;
     this.onRequest = this.onRequest.bind(this);
@@ -920,28 +918,20 @@ class PuppeteerArtifactPluginsProvider {
   }
 }
 
-class PuppeteerAllocCookie {
-  testee: PuppeteerTestee;
-  id: any;
-
-  constructor(testee) {
-    this.testee = testee;
-    this.id = '';
-  }
-}
+type PuppeteerAllocCookie = {
+  id: string;
+};
 
 class PuppeteerDeviceAllocation {
-  private readonly testee: PuppeteerTestee;
   private readonly emitter: any;
 
   constructor(deps) {
-    this.testee = new PuppeteerTestee(deps);
     this.emitter = deps.eventEmitter;
   }
 
   async allocate(deviceConfig) {
     debug('PuppeteerAllocation.allocate', deviceConfig.device);
-    return new PuppeteerAllocCookie(this.testee);
+    return { id: '' };
   }
 
   async free(deviceCookie: PuppeteerAllocCookie, { shutdown }) {
@@ -956,13 +946,13 @@ class PuppeteerDeviceAllocation {
 
 class PuppeteerRuntimeDriver extends DeviceDriverBase {
   private readonly deviceId: any;
-  private readonly testee: PuppeteerTestee;
+  private readonly app: PuppeteerTestee;
 
   constructor(deps: any, cookie: PuppeteerAllocCookie) {
     super(deps);
     debug('constructor');
 
-    this.testee = cookie.testee;
+    this.app = new PuppeteerTestee(deps);
     this.deviceId = cookie.id;
   }
 
@@ -1026,7 +1016,7 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
       page = null;
     }
 
-    await this.testee.disconnect();
+    await this.app.disconnect();
     await super.cleanup(bundleId);
   }
 
@@ -1237,7 +1227,7 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
   async resetStatusBar() {}
 
   async waitUntilReady() {
-    await this.testee.connect();
+    await this.app.connect();
   }
 
   async reloadReactNative() {
