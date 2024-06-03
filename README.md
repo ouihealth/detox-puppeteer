@@ -81,7 +81,7 @@ When screen recording is enabled, chromium will display a toolbar that pushes th
 out of the viewport. To compensate you can add the following css to your app:
 
 ```css
-body.detox-puppeteer-recording > #root {
+body.detox-puppeteer > #root {
   height: calc(100vh - 50px);
 }
 ```

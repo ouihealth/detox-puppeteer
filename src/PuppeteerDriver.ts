@@ -47,6 +47,7 @@ async function setupTouchIndicators() {
   await page?.evaluate(() => {
     if ((window as any).__detox_puppeteer_mouse_pointer) return;
     (window as any).__detox_puppeteer_mouse_pointer = true;
+    document.body.classList.add('detox-puppeteer');
     const box = document.createElement('puppeteer-mouse-pointer');
     const styleElement = document.createElement('style');
     styleElement.innerHTML = `
