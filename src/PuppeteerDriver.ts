@@ -37,10 +37,8 @@ let enableSynchronization = true;
 let browser: puppeteer.Browser | null;
 let page: puppeteer.Page | null;
 let urlBlacklist: string[] = [];
-let pendingExport: string | null = null;
 let isRecording = false;
 let disableTouchIndicators = false;
-let recordVideo = false;
 
 // https://gist.github.com/aslushnikov/94108a4094532c7752135c42e12a00eb
 async function setupTouchIndicators() {
@@ -878,16 +876,26 @@ class PuppeteerEnvironmentValidator {
 }
 
 let recorder;
-let exportPath;
+let pendingRecordVideo = false;
+let _exportPath;
 async function startRecordVideo() {
-  debug('recordVideo', { page: !!page });
-  if (!page) {
-    recordVideo = true;
+  function getExportPath() {
+    if (_exportPath) return _exportPath;
     const exportname = `puppet${Math.random()}.mp4`;
-    exportPath = path.join(os.homedir(), 'Downloads', exportname);
+    _exportPath = path.join(os.homedir(), 'Downloads', exportname);
+    return _exportPath;
+  }
+
+  const exportPath = getExportPath();
+
+  debug('startRecordVideo', { page: !!page, exportPath });
+  /* If page has not yet started, we cannot start recording so instead we set a flag telling
+   * the driver to manually call startRecordVideo when the page is opened */
+  if (!page) {
+    pendingRecordVideo = true;
     return exportPath;
   }
-  recordVideo = false;
+  pendingRecordVideo = false;
   recorder = new PuppeteerScreenRecorder(page, { fps: 60 });
   recorder.start(exportPath);
   isRecording = true;
@@ -895,7 +903,7 @@ async function startRecordVideo() {
 }
 
 async function stopRecordVideo() {
-  debug('stopVideo', { pendingExport });
+  debug('stopVideo', { _exportPath });
   await recorder?.stop();
   recorder = undefined;
 }
@@ -1091,7 +1099,7 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
     if (url) {
       page = (await browser.pages())[0];
       await page!.goto(url, { waitUntil: NETWORKIDLE });
-      if (recordVideo) {
+      if (pendingRecordVideo) {
         await startRecordVideo();
       }
     }
@@ -1123,7 +1131,7 @@ class PuppeteerRuntimeDriver extends DeviceDriverBase {
     // If we're in the middle of recording, signal to the next launch that we should start
     // in a recording state
     if (isRecording) {
-      recordVideo = true;
+      pendingRecordVideo = true;
     }
     await stopRecordVideo();
     await this.emitter.emit('beforeTerminateApp', { deviceId: this.deviceId, bundleId });
