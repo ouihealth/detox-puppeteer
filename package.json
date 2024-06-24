@@ -15,8 +15,8 @@
   },
   "dependencies": {
     "lodash": "^4.17.19",
-    "puppeteer": "^21.0.3",
-    "puppeteer-screen-recorder": "^2.0.2",
+    "puppeteer": "^22.0.0",
+    "puppeteer-screen-recorder": "^3.0.0",
     "tslib": "^2.2.0"
   },
   "devDependencies": {
