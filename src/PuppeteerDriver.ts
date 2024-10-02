@@ -312,6 +312,18 @@ class PuppeteerTestee {
         await page!.keyboard.press('Backspace');
       }
       return true;
+    } else if (action.method === 'getAttributes') {
+      // https://wix.github.io/Detox/docs/api/actions/#getattributes
+      return {
+        text: await (await element.getProperty('textContent')).jsonValue(),
+        label: await (await element.getProperty('ariaLabel')).jsonValue(),
+        placeholder: await (await element.getProperty('ariaPlaceholder')).jsonValue(),
+        enabled: !(await (await element.getProperty('ariaDisabled')).jsonValue()),
+        identifier: await element.evaluate((e) => e.getAttribute('data-testid')),
+        visible: await element.isIntersectingViewport(),
+        value: await (await element.getProperty('nodeValue')).jsonValue(),
+        frame: await element.evaluate((e) => e.getBoundingClientRect().toJSON()),
+      };
     } else if (action.method === 'tap') {
       await element.tap();
       return true;
@@ -823,6 +835,7 @@ Network requests (${Object.keys(this.inflightRequests).length}): ${Object.keys(
                 if (result === false || result === null) throw new Error('invalid result');
                 await sendResponse({
                   type: 'invokeResult',
+                  params: result,
                   messageId: action.messageId,
                 });
               } catch (error) {

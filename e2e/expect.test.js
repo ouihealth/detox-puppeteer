@@ -1,3 +1,4 @@
+const { jestExpect } = require('@jest/expect');
 const utils = require('./utils');
 const detox = require('detox');
 
@@ -44,6 +45,32 @@ describe('label', () => {
 
   it('matches by label', async () => {
     await expect(element(by.label('accessibility is important'))).toExist();
+  });
+});
+
+describe('getAttributes', () => {
+  // https://wix.github.io/Detox/docs/api/actions/#getattributes
+  it('returns standard attributes', async () => {
+    const attrs = await element(by.id('middle')).getAttributes();
+    jestExpect(attrs).toEqual({
+      text: 'my middle',
+      label: 'accessibility is important',
+      placeholder: null,
+      enabled: true,
+      identifier: 'middle',
+      visible: true,
+      value: null,
+      frame: {
+        x: 8,
+        y: 26.5,
+        width: 359,
+        height: 18.5,
+        top: 26.5,
+        right: 367,
+        bottom: 45,
+        left: 8,
+      },
+    });
   });
 });
 

@@ -20,6 +20,20 @@ function callThunk(element) {
 
 class Action {}
 
+class GetAttributesAction extends Action {
+  constructor() {
+    super();
+    this._call = {
+      target: {
+        type: 'action',
+        value: 'action',
+      },
+      method: 'getAttributes',
+      args: [],
+    };
+  }
+}
+
 class TapAction extends Action {
   constructor() {
     super();
@@ -237,7 +251,7 @@ class Interaction {
 
   async execute() {
     //if (!this._call) throw new Error(`Interaction.execute cannot find a valid _call, got ${typeof this._call}`);
-    await this._invocationManager.execute(this._call);
+    return await this._invocationManager.execute(this._call);
   }
 }
 
@@ -383,6 +397,13 @@ class Element {
     this._atIndex = index;
     this._selectElementWithMatcher(this._originalMatcher, new IndexMatcher(index));
     return this;
+  }
+  async getAttributes() {
+    return await new ActionInteraction(
+      this._invocationManager,
+      this,
+      new GetAttributesAction(),
+    ).execute();
   }
   async tap() {
     return await new ActionInteraction(this._invocationManager, this, new TapAction()).execute();
