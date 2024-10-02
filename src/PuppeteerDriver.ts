@@ -668,9 +668,10 @@ class PuppeteerTestee {
     client.on('Animation.animationStarted', ({ animation }) => {
       // console.log('Animation started id=', animation.id)
       // console.log(animation)
-      animationTimeById[animation.id] = animation.source.duration;
+      animationTimeById[animation.id] = animation.source!.duration;
     });
-    client.on('Animation.animationCancelled', ({ id }) => {
+    client.on('Animation.animationCancelled', (event) => {
+      const { id } = event as { id: string };
       // console.log('animationCancelled', id);
       delete animationTimeById[id];
     });
@@ -842,7 +843,7 @@ Network requests (${Object.keys(this.inflightRequests).length}): ${Object.keys(
                 this.client.sendAction({
                   type: 'testFailed',
                   messageId,
-                  params: { details: JSON.stringify(action) + '\n' + error.message },
+                  params: { details: JSON.stringify(action) + '\n' + (error as Error).message },
                 });
               }
             }
