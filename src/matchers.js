@@ -221,10 +221,9 @@ class TextMatcher extends Matcher {
   constructor(value) {
     super();
 
-    if (typeof value === 'object') {
-      // this is a RegExp but for some reason instanceof RegExp returns false
+    if (value instanceof RegExp) {
       const stringified = value.toString(); // "/pattern/<flags>"
-      const [_prefix, pattern, flags] = stringified.split('/');
+      const [_prefix, parts, flags] = stringified.split('/');
 
       this._call = {
         target: {
@@ -232,9 +231,7 @@ class TextMatcher extends Matcher {
           value: 'matcher',
         },
         method: 'selector',
-        args: flags
-          ? [`[text()[matches(., '${pattern}', '${flags}')]]`]
-          : [`[text()[matches(., '${pattern}')]]`],
+        args: [`[text()[matches(., '${pattern}', '${flags}')]]`],
       };
     } else {
       this._call = {
