@@ -220,29 +220,14 @@ class NotExistsMatcher extends Matcher {
 class TextMatcher extends Matcher {
   constructor(value) {
     super();
-
-    if (value instanceof RegExp) {
-      const stringified = value.toString(); // "/pattern/<flags>"
-      const [_prefix, parts, flags] = stringified.split('/');
-
-      this._call = {
-        target: {
-          type: 'matcher',
-          value: 'matcher',
-        },
-        method: 'selector',
-        args: [`[text()[matches(., '${pattern}', '${flags}')]]`],
-      };
-    } else {
-      this._call = {
-        target: {
-          type: 'matcher',
-          value: 'matcher',
-        },
-        method: 'selector',
-        args: [`[contains(., '${value}') or @value='${value}']`],
-      };
-    }
+    this._call = {
+      target: {
+        type: 'matcher',
+        value: 'matcher',
+      },
+      method: 'selector',
+      args: [`[contains(., '${value}') or @value='${value}']`],
+    };
   }
 }
 
