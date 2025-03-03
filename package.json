@@ -1,6 +1,6 @@
 {
   "name": "detox-puppeteer",
-  "version": "8.0.1",
+  "version": "8.0.2",
   "main": "build/PuppeteerDriver.js",
   "scripts": {
     "build": "tsc",
