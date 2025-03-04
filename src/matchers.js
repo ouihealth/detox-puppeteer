@@ -96,7 +96,7 @@ function normalizeRegex(value) {
   if (typeof value === 'object') {
     const [prefix, pattern, flags] = value.toString().split('/');
     // cleanup special characters
-    return { value: pattern.replace(/\W+/, ''), regex: true };
+    return { value: pattern.replace(/[^\w\s\d]/g, ''), regex: true };
   }
 
   return { value, regex: false };
