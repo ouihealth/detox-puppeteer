@@ -90,6 +90,18 @@ class Matcher {
   }
 }
 
+function normalizeRegex(value) {
+  // for some reason instanceof RegExp isn't working in this layer when a value is passed from
+  // testing code
+  if (typeof value === 'object') {
+    const [prefix, pattern, flags] = value.toString().split('/');
+    // cleanup special characters
+    return { value: pattern.replace(/\W+/, ''), regex: true };
+  }
+
+  return { value, regex: false };
+}
+
 class IndexMatcher extends Matcher {
   constructor(value) {
     super();
@@ -105,15 +117,18 @@ class IndexMatcher extends Matcher {
 }
 
 class LabelMatcher extends Matcher {
-  constructor(value) {
+  constructor(_value) {
     super();
+
+    const { value, regex } = normalizeRegex(_value);
+
     this._call = {
       target: {
         type: 'matcher',
         value: 'matcher',
       },
       method: 'selector',
-      args: [`[@aria-label='${value}']`],
+      args: [regex ? `[contains(@aria-label, '${value}')]` : `[@aria-label='${value}']`],
     };
   }
 }
@@ -218,8 +233,9 @@ class NotExistsMatcher extends Matcher {
 }
 
 class TextMatcher extends Matcher {
-  constructor(value) {
+  constructor(_value) {
     super();
+    const { value, regex } = normalizeRegex(_value);
     this._call = {
       target: {
         type: 'matcher',
